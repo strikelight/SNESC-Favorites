@@ -1,0 +1,19 @@
+object HelpForm: THelpForm
+  Left = 403
+  Height = 341
+  Top = 201
+  Width = 436
+  Caption = 'Help'
+  ClientHeight = 341
+  ClientWidth = 436
+  LCLVersion = '1.8.2.0'
+  object Memo1: TMemo
+    Left = 0
+    Height = 341
+    Top = 0
+    Width = 436
+    Align = alClient
+    ScrollBars = ssAutoBoth
+    TabOrder = 0
+  end
+end
