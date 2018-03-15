@@ -1,6 +1,6 @@
 SNESC Favorites is released under the GNU Public License.
 
-SNESC Favorites v1.0.0 by StrikeLight
+SNESC Favorites v0.9.0 beta by StrikeLight
 
 Description:
 ============
@@ -27,3 +27,8 @@ Usage:
 Tips:
 =====
 - If you would like a different favorites icon, replace the files favorites.png and favorites_small.png with your choosing.
+
+
+Thanks:
+=======
+madmonkey,Cluster,KMFDManic,Team Shinkansen,/r/miniSNESmods,the Hakchi community

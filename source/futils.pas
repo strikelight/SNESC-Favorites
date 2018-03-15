@@ -111,7 +111,12 @@ function GenerateFolderName(Number: String):String;
 var
   num: integer;
 begin
-  num := StrToInt(Number)+1;
+  if not TryStrToInt(Number,num) then
+    begin
+      ShowMessage('Error: String not a valid number.');
+      exit;
+    end;
+  num := num+1;
   GenerateFolderName := Format('%.3d',[num]);
 end;
 
@@ -146,7 +151,9 @@ begin
         begin
           t := FolderSuff;
           Repeat
+            ShowMessage('t='+t);
             t := GenerateFolderName(t);
+            ShowMessage('t='+t);
           until (not DirectoryExists(ConsolePath+t));
           FolderSuff := t;
         end;

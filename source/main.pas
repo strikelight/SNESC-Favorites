@@ -135,16 +135,24 @@ procedure TForm1.SaveBtnClick(Sender: TObject);
 var
   fname: string;
   Res: Boolean;
+  LastFolder: String;
 begin
   fname := GamesEdit.Caption;
+  fname := fname + '\';
   if (LastFavFolder <> '') then
     begin
-      if (not FileExists(fname+'\'+LastFavFolder+'\.fav')) then
+      if (not FileExists(fname+LastFavFolder+'\.fav')) then
         LastFavFolder := '';
     end;
-  if (LastFavFolder = '') then LastFavFolder := GenerateFolderName(GetLastFolderNumber(fname));
+  if (LastFavFolder = '') then
+    begin
+      LastFolder := GetLastFolderNumber(fname);
+      if (FileExists(fname+LastFolder+'\.fav')) then
+        LastFavFolder := LastFolder
+      else
+        LastFavFolder := GenerateFolderName(GetLastFolderNumber(fname));
+    end;
   if (fname = '') or (not DirectoryExists(fname)) then exit;
-  fname := fname + '\';
   Res := CreateFaveLinks(fname,CheckListBox1,LastFavFolder);
   MessageDlg('Save','Completed.',mtInformation,[mbOk],0);
 end;
