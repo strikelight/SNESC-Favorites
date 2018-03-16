@@ -67,8 +67,46 @@ begin
          Canvas.Font.Style := [fsBold];
          Canvas.FillRect(ARect);
          Canvas.Pen.Style := psSolid;
-         Canvas.Pen.Color := $F6D8AD;
-         Canvas.Font.Color := $F6D8AD;
+         Canvas.Pen.Color := $FFA855;
+         Canvas.Font.Color := $FFA855;
+         Canvas.Line(
+           ARect.Left + MARGIN,
+           (ARect.Top + ARect.Bottom) div 2,
+           ARect.Right - MARGIN,
+           (ARect.Top + ARect.Bottom) div 2
+         );
+         Delete(s, 1, 1);
+         if s <> '' then
+           begin
+             s := ' ' + s + ' ';
+             w := Canvas.TextWidth(s);
+             Canvas.TextOut(
+               (ARect.Left + ARect.Right - w) div 2,
+               (ARect.Top + ARect.Bottom - Canvas.TextHeight('Tg')) div 2,
+               s
+             );
+           end;
+         Canvas.Pen.Style := psClear;
+         Canvas.Brush.Style := bsClear;
+         Canvas.Pen.Color := clWhite;
+         if (c) then Canvas.DrawFocusRect(ARect);
+         Canvas.Font.Style:=[];
+         Canvas.Font.Color := clOld;
+         Canvas.Brush.Style := OldBrushStyle;
+         Canvas.TextStyle := OldTextStyle;
+         Canvas.Font.Style := OldStyle;
+         exit;
+       end
+      else if (s <> '') and (s[1] = '=') then
+       begin
+         Canvas.Brush.Style := bsSolid;
+         Canvas.Brush.Color := clWhite;
+
+         Canvas.Font.Style := [fsBold];
+         Canvas.FillRect(ARect);
+         Canvas.Pen.Style := psSolid;
+         Canvas.Pen.Color := $419CF2;
+         Canvas.Font.Color := $419CF2;
          Canvas.Line(
            ARect.Left + MARGIN,
            (ARect.Top + ARect.Bottom) div 2,
@@ -99,7 +137,7 @@ begin
        end;
 
       s := Items[Index];
-      if (s <> '') and (s[1] = '-') then exit;
+      if (s <> '') and ((s[1] = '-') or (s[1] = '=')) then exit;
       Canvas.Brush.Color := Brush.Color;
       Canvas.FillRect(ARect);
       Canvas.Brush.Style := bsClear;

@@ -25,12 +25,12 @@ unit futils;
 interface
 
 uses
-  Classes, SysUtils, RegExpr, CheckLst, Dialogs, FileUtil;
+  Classes, SysUtils, RegExpr, CheckLst, Dialogs, FileUtil, ComCtrls;
 
-function LoadGamesList(CheckListBox: TCheckListBox; Filename: String):Boolean;
+function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer):Boolean;
 function GetLastFolderNumber(Path: String):String;
 function GenerateFolderName(Number: String):String;
-function CreateFaveLinks(ConsolePath: String; GamesList: TCheckListBox; var FolderSuff: String):Boolean;
+function CreateFaveLinks(ConsolePath: String; GamesList: TCheckListBox; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
 function UpdateXML(Filename: String; GamesList: TCheckListBox):Boolean;
 
 var
@@ -39,7 +39,7 @@ var
 implementation
 
 
-function LoadGamesList(CheckListBox: TCheckListBox; Filename: String):Boolean;
+function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer):Boolean;
 var
   FStringList: TStringList;
   i,j: integer;
@@ -52,6 +52,7 @@ begin
       exit;
     end;
 
+  CheckListBox.Clear;
   FStringList := TStringList.Create;
   j := 0;
 
@@ -60,15 +61,29 @@ begin
     for i:=0 to FStringList.Count-1 do
       begin
         s := StringReplace(FStringList[i],'&amp;','&',[rfReplaceAll, rfIgnoreCase]);
-        if (Pos('  <Folder',s) = 1) then // and (Pos('folder_',FStringList[i]) <= 0) then
+        if (Pos('  <Folder',s) > 0) and (ViewStyle > 0) then // and (Pos('folder_',FStringList[i]) <= 0) then
           begin
             RegExObj := TRegExpr.Create('^  <Folder name=\"(.*?)\" icon');
             if RegExObj.Exec(s) then
-              CheckListBox.Items.Add('-'+RegExObj.Match[1]);
+              begin
+                CheckListBox.Items.Add('-'+RegExObj.Match[1]);
+                inc(j);
+                SetLength(GameCodes,j);
+                GameCodes[j-1] := '000';
+              end
+            else if (ViewStyle = 2) then
+              begin
+                RegExObj.Free;
+                RegExObj := TRegExpr.Create('<Folder name=\"(.*?)\" icon');
+                if RegExObj.Exec(s) then
+                  begin
+                    CheckListBox.Items.Add('='+RegExObj.Match[1]);
+                    inc(j);
+                    SetLength(GameCodes,j);
+                    GameCodes[j-1] := '000';
+                  end;
+              end;
             RegExObj.Free;
-            inc(j);
-            SetLength(GameCodes,j);
-            GameCodes[j-1] := '000';
           end
         else if (Pos('Game code',s) > 0) then
           begin
@@ -120,9 +135,10 @@ begin
   GenerateFolderName := Format('%.3d',[num]);
 end;
 
-function CreateFaveLinks(ConsolePath: String; GamesList: TCheckListBox; var FolderSuff: String):Boolean;
+function CreateFaveLinks(ConsolePath: String; GamesList: TCheckListBox; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
 var
   DeskFile,EmptyFile,FindLink: TStringList;
+  StatusPanel: TStatusPanel;
   FPath,g,t: String;
   j: Integer;
   Res: Boolean;
@@ -133,6 +149,11 @@ begin
   EmptyFile := TStringList.Create;
   DeskFile.LineBreak := #10; // Hakchi kernel will give c8 errors for Dos LineFeeds
 
+  StatusPanel := StatusBar.Panels.Items[1];
+  ProgressBar.Max := GamesList.Count+3;
+  ProgressBar.Position:=0;
+  StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
+  StatusBar.Update;
   if (DirectoryExists(ConsolePath+FolderSuff)) then
     begin
       if (FileExists(ConsolePath+FolderSuff+'\.fav')) then
@@ -158,6 +179,10 @@ begin
           FolderSuff := t;
         end;
     end;
+  ProgressBar.Position:=ProgressBar.Position+1;
+  StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
+  StatusBar.Update;
+
   CreateDir(ConsolePath+'000\CLV-S-00'+FolderSuff);
   CreateDir(ConsolePath+FolderSuff);
 
@@ -185,6 +210,9 @@ begin
   DeskFile.Add('Copyright=hakchi2 ©2017 Alexey ''Cluster'' Avdyukhin');
 
   DeskFile.SaveToFile(ConsolePath+'000\CLV-S-00'+FolderSuff+'\CLV-S-00'+FolderSuff+'.desktop');
+  ProgressBar.Position:=ProgressBar.Position+1;
+  StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
+  StatusBar.Update;
 
   if (FileExists(FPath+'\favorites.png')) then
     begin
@@ -199,12 +227,15 @@ begin
   CopyFile(ConsolePath+'001\CLV-S-00000\CLV-S-00000.desktop',ConsolePath+FolderSuff+'\CLV-S-00000\CLV-S-00000.desktop');
   CopyFile(ConsolePath+'001\CLV-S-00000\CLV-S-00000.png',ConsolePath+FolderSuff+'\CLV-S-00000\CLV-S-00000.png');
   CopyFile(ConsolePath+'001\CLV-S-00000\CLV-S-00000_small.png',ConsolePath+FolderSuff+'\CLV-S-00000\CLV-S-00000_small.png');
+  ProgressBar.Position:=ProgressBar.Position+1;
+  StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
+  StatusBar.Update;
 
   try
     for j := 0 to GamesList.Count-1 do
       begin
         g := GamesList.Items[j];
-        if (g[1] <> '-') and (GamesList.Checked[j]) then
+        if (g[1] <> '-') and (g[1] <> '=') and (GamesList.Checked[j]) then
           begin
             if (Length(GameCodes[j]) > 0) then
               begin
@@ -221,12 +252,14 @@ begin
                 end;
               end;
           end;
+        ProgressBar.Position:=ProgressBar.Position+1;
+        StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
+        StatusBar.Update;
       end;
   finally
     DeskFile.Free;
     EmptyFile.Free;
   end;
-
   CreateFaveLinks := True;
 end;
 
@@ -263,7 +296,7 @@ begin
             for j := 0 to GamesList.Count-1 do
               begin
                 g := GamesList.Items[j];
-                if (g[1] <> '-') and (GamesList.Checked[j]) then
+                if (g[1] <> '-') and (g[1] <> '=') and (GamesList.Checked[j]) then
                   begin
                     if (Length(GameCodes[j]) > 0) then
                       begin

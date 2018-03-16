@@ -42,6 +42,12 @@ type
     MenuItem4: TMenuItem;
     MenuItem5: TMenuItem;
     MenuItem6: TMenuItem;
+    MenuItem7: TMenuItem;
+    FlatOption: TMenuItem;
+    ParentChildOption: TMenuItem;
+    ParentOption: TMenuItem;
+    StatusBar1: TStatusBar;
+    ViewMenu: TMenuItem;
     XMLEdit: TFileNameEdit;
     Label2: TLabel;
     SaveBtn: TButton;
@@ -55,6 +61,7 @@ type
       ARect: TRect; State: TOwnerDrawState);
     procedure CheckListBox1ItemClick(Sender: TObject; Index: integer);
     procedure ClearBtnClick(Sender: TObject);
+    procedure FlatOptionClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -63,9 +70,14 @@ type
     procedure MenuItem4Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
     procedure MenuItem6Click(Sender: TObject);
+    procedure ParentChildOptionClick(Sender: TObject);
+    procedure ParentOptionClick(Sender: TObject);
     procedure SaveBtnClick(Sender: TObject);
   private
     { private declarations }
+    progressBar: TProgressBar;
+    statusPanel0: TStatusPanel;
+    statusPanel1: TStatusPanel;
   public
     { public declarations }
   end;
@@ -74,6 +86,7 @@ type
 var
   Form1: TForm1;
   LastFavFolder: String;
+  ViewStyle: Integer;
 
 const
   pName = 'SNESC Favorites';
@@ -89,8 +102,27 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  statusPanel0:=StatusBar1.Panels.Items[0];
+  statusPanel0.Text:='StatusPanel0';
+  statusPanel1:=StatusBar1.Panels.Items[1];
+  progressBar:=TProgressBar.Create(StatusBar1);
+  progressBar.SetInitialBounds(StatusBar1.Left, StatusBar1.Top,  350, StatusBar1.Height);
+  progressBar.Parent:=Self;
+  progressBar.Left:=statusBar1.Left;
+  progressBar.Top:=statusBar1.Top;
+  progressBar.Min:=0;
+  progressBar.Position:=0;
+
   LastFavFolder := '';
-  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,LastFavFolder);
+  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,LastFavFolder);
+  FlatOption.Checked:=False;
+  ParentOption.Checked:=False;
+  ParentChildOption.Checked:=False;
+  case ViewStyle of
+       0: FlatOption.Checked:=True;
+       1: ParentOption.Checked:=True;
+       2: ParentChildOption.Checked:=True;
+  end;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -106,7 +138,7 @@ begin
   if (XMLEdit.Caption = '') or (not FileExists(XMLEdit.Caption)) then exit;
   CheckListBox1.Clear;
   SetLength(GameCodes,0);
-  LoadGamesList(CheckListBox1,XMLEdit.Caption);
+  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
 end;
 
 procedure TForm1.MenuItem3Click(Sender: TObject);
@@ -153,8 +185,12 @@ begin
         LastFavFolder := GenerateFolderName(GetLastFolderNumber(fname));
     end;
   if (fname = '') or (not DirectoryExists(fname)) then exit;
-  Res := CreateFaveLinks(fname,CheckListBox1,LastFavFolder);
-  MessageDlg('Save','Completed.',mtInformation,[mbOk],0);
+  Res := CreateFaveLinks(fname,CheckListBox1,ProgressBar,StatusBar1,LastFavFolder);
+  if (MessageDlg('Save','Completed.',mtInformation,[mbOk],0) = mrOk) then
+    begin
+      ProgressBar.Position:=0;
+      statusPanel1.Text:='';
+    end;
 end;
 
 procedure TForm1.CheckListBox1DrawItem(Control: TWinControl; Index: Integer;
@@ -185,9 +221,42 @@ begin
   CheckListBox1.CheckAll(cbUnchecked,False,False);
 end;
 
+procedure TForm1.FlatOptionClick(Sender: TObject);
+begin
+  ViewStyle := 0;
+  FlatOption.Checked:=True;
+  ParentOption.Checked:=False;
+  ParentChildOption.Checked:=False;
+  SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
+  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,LastFavFolder);
+//  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
+end;
+
+procedure TForm1.ParentOptionClick(Sender: TObject);
+begin
+  ViewStyle := 1;
+  FlatOption.Checked:=False;
+  ParentOption.Checked:=True;
+  ParentChildOption.Checked:=False;
+  SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
+  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,LastFavFolder);
+//  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
+end;
+
+procedure TForm1.ParentChildOptionClick(Sender: TObject);
+begin
+  ViewStyle := 2;
+  FlatOption.Checked:=False;
+  ParentOption.Checked:=False;
+  ParentChildOption.Checked:=True;
+  SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
+  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,LastFavFolder);
+//  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
+end;
+
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
-  SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,CheckListBox1);
+  SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
 end;
 
 end.
