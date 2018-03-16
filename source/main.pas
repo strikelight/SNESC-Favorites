@@ -90,7 +90,7 @@ var
 
 const
   pName = 'SNESC Favorites';
-  pVersion = '0.9.0 beta';
+  pVersion = '0.9.5 beta';
 
 implementation
 
@@ -102,6 +102,7 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  Form1.Caption := pName+' - '+pVersion;
   statusPanel0:=StatusBar1.Panels.Items[0];
   statusPanel0.Text:='StatusPanel0';
   statusPanel1:=StatusBar1.Panels.Items[1];

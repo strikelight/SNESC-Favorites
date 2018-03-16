@@ -44,8 +44,10 @@ var
   FStringList: TStringList;
   i,j: integer;
   s: String;
+  fh: Boolean;
   RegexObj: TRegExpr;
 begin
+  fh := False;
   if not FileExists(Filename) then
     begin
       LoadGamesList := False;
@@ -87,6 +89,14 @@ begin
           end
         else if (Pos('Game code',s) > 0) then
           begin
+            if (Pos('  <Game',s) = 1) and (ViewStyle > 0) and (not fh) then
+              begin
+                CheckListBox.Items.Add('-HOME');
+                inc(j);
+                SetLength(GameCodes,j);
+                GameCodes[j-1] := '000';
+                fh := True;
+              end;
             RegExObj := TRegExpr.Create('Game code="(.*?)" name="(.*?)"');
             if RegExObj.Exec(s) then
               begin
