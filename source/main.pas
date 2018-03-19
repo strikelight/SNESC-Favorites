@@ -90,7 +90,7 @@ var
 
 const
   pName = 'SNESC Favorites';
-  pVersion = '0.9.5 beta';
+  pVersion = '1.0.0';
 
 implementation
 

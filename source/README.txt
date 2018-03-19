@@ -1,6 +1,6 @@
 SNESC Favorites is released under the GNU Public License.
 
-SNESC Favorites v0.9.5 beta by StrikeLight
+SNESC Favorites v1.0.0 by StrikeLight
 
 Description:
 ============

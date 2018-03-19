@@ -1,3 +1,6 @@
+1.0.0 (3/19/2018)
+- Added different colors to sub-folders depending on their nest level
+
 0.9.5 Beta (3/16/2018)
 - Added progress bar when saving
 - Added preferences->View options (Flat/Parent folders only/Parent and Child folders)

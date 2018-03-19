@@ -43,7 +43,7 @@ function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:
 var
   FStringList: TStringList;
   i,j: integer;
-  s: String;
+  s,t,u: String;
   fh: Boolean;
   RegexObj: TRegExpr;
 begin
@@ -79,7 +79,14 @@ begin
                 RegExObj := TRegExpr.Create('<Folder name=\"(.*?)\" icon');
                 if RegExObj.Exec(s) then
                   begin
-                    CheckListBox.Items.Add('='+RegExObj.Match[1]);
+                    u := '    <';
+                    t := '';
+                    while (Pos(u,s) > 0) do
+                      begin
+                        t := t+'=';
+                        u := '  '+u;
+                      end;
+                    CheckListBox.Items.Add(t+RegExObj.Match[1]);
                     inc(j);
                     SetLength(GameCodes,j);
                     GameCodes[j-1] := '000';

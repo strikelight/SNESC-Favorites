@@ -38,7 +38,7 @@ implementation
 procedure CheckListBoxDrawItem(Control: TWinControl; Index: Integer;
   ARect: TRect; State: TOwnerDrawState);
 Var clOld: TColor;
-    w : Integer;
+    w,i : Integer;
     OldBrushStyle: TBrushStyle;
     OldTextStyle: TTextStyle;
     NewTextStyle: TTextStyle;
@@ -49,6 +49,7 @@ Var clOld: TColor;
 const
    MARGIN = 2;
    IsChecked : array[Boolean] of Integer = (DFCS_BUTTONCHECK, DFCS_BUTTONCHECK or DFCS_CHECKED) ;
+   ColorSet: Array[0..3] of TColor = ($FDDE54, $2DAEF6, $8DFC5E, $37276B);
 begin
    b := odSelected In State;
    c := odFocused In State;
@@ -101,19 +102,25 @@ begin
        begin
          Canvas.Brush.Style := bsSolid;
          Canvas.Brush.Color := clWhite;
-
-         Canvas.Font.Style := [fsBold];
+         Canvas.Font.Style := [];
          Canvas.FillRect(ARect);
          Canvas.Pen.Style := psSolid;
-         Canvas.Pen.Color := $419CF2;
-         Canvas.Font.Color := $419CF2;
+         i := 0;
+         while (s[1] = '=') do
+           begin
+             Delete(s, 1, 1);
+             Inc(i);
+             if (i > High(ColorSet)) then
+               i := High(ColorSet);
+           end;
+         Canvas.Pen.Color := ColorSet[i];
+         Canvas.Font.Color := ColorSet[i];
          Canvas.Line(
            ARect.Left + MARGIN,
            (ARect.Top + ARect.Bottom) div 2,
            ARect.Right - MARGIN,
            (ARect.Top + ARect.Bottom) div 2
          );
-         Delete(s, 1, 1);
          if s <> '' then
            begin
              s := ' ' + s + ' ';
