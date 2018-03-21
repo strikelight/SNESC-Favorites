@@ -113,9 +113,10 @@ begin
   progressBar.Top:=statusBar1.Top;
   progressBar.Min:=0;
   progressBar.Position:=0;
-
+  progressBar.Visible:=False;
   LastFavFolder := '';
   LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,LastFavFolder);
+  GetCheckCount(CheckListBox1, StatusBar1.Panels.Items[0], True);
   FlatOption.Checked:=False;
   ParentOption.Checked:=False;
   ParentChildOption.Checked:=False;
@@ -140,6 +141,7 @@ begin
   CheckListBox1.Clear;
   SetLength(GameCodes,0);
   LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
+  GetCheckCount(CheckListBox1,StatusPanel0,True);
 end;
 
 procedure TForm1.MenuItem3Click(Sender: TObject);
@@ -172,6 +174,7 @@ var
 begin
   fname := GamesEdit.Caption;
   fname := fname + '\';
+  statusPanel0.Text:='';
   if (LastFavFolder <> '') then
     begin
       if (not FileExists(fname+LastFavFolder+'\.fav')) then
@@ -190,7 +193,9 @@ begin
   if (MessageDlg('Save','Completed.',mtInformation,[mbOk],0) = mrOk) then
     begin
       ProgressBar.Position:=0;
+      ProgressBar.Visible:= False;;
       statusPanel1.Text:='';
+      GetCheckCount(CheckListBox1, StatusBar1.Panels.Items[0], True);
     end;
 end;
 
@@ -202,24 +207,28 @@ end;
 
 procedure TForm1.CheckListBox1ItemClick(Sender: TObject; Index: integer);
 var
-  i,checked : integer;
+  checked : integer;
 begin
-  if (Sender as TCheckListBox).Checked[Index] then
+  checked := GetCheckCount(CheckListBox1,StatusPanel0,False);
+  if CheckListBox1.Checked[Index] then
     begin
-      checked := 0;
-      for i := 0 to CheckListBox1.Count-1 do
-        if (CheckListBox1.Checked[i]) then inc(checked);
       if (checked > 30) then
         begin
           CheckListBox1.Checked[Index] := False;
+          Dec(checked);
           MessageDlg('Error','Maximum of 30 favorites allowed.',mtError,[mbOk],0);
         end;
     end;
+  if (checked = 1) then
+    StatusPanel0.text := ' 1 game selected.'
+  else
+    StatusPanel0.text := ' '+inttostr(checked)+' games selected.';
 end;
 
 procedure TForm1.ClearBtnClick(Sender: TObject);
 begin
   CheckListBox1.CheckAll(cbUnchecked,False,False);
+  GetCheckCount(CheckListBox1, StatusPanel0, True);
 end;
 
 procedure TForm1.FlatOptionClick(Sender: TObject);

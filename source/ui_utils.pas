@@ -27,11 +27,11 @@ unit ui_utils;
 interface
 
 uses
-  Classes, SysUtils, Controls, LCLtype, LCLIntf, Graphics, Checklst;
+  Classes, SysUtils, Controls, LCLtype, LCLIntf, Graphics, Checklst, ComCtrls;
 
 procedure CheckListBoxDrawItem(Control: TWinControl; Index: Integer;
   ARect: TRect; State: TOwnerDrawState);
-
+function GetCheckCount(CheckListBox: TCheckListBox; StatusPanel: TStatusPanel; Update:Boolean):Integer;
 
 implementation
 
@@ -173,6 +173,24 @@ begin
       Canvas.TextStyle := OldTextStyle;
       Canvas.Font.Style := OldStyle;
    end;
+end;
+
+function GetCheckCount(CheckListBox: TCheckListBox; StatusPanel: TStatusPanel; Update:Boolean):Integer;
+var
+  i,j: Integer;
+begin
+  j := 0;
+  for i := 0 to CheckListBox.Count-1 do
+    if CheckListBox.Checked[i] then
+      Inc(j);
+  if Update then
+    begin
+      if (j = 1) then
+        StatusPanel.text := ' 1 game selected.'
+      else
+        StatusPanel.text := ' '+inttostr(j)+' games selected.';
+    end;
+  GetCheckCount := j;
 end;
 
 end.

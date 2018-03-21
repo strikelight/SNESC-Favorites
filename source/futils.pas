@@ -164,6 +164,7 @@ begin
   FPath := ExtractFilePath(ParamStr(0));
   DeskFile := TStringList.Create;
   EmptyFile := TStringList.Create;
+  ProgressBar.Visible := True;
   DeskFile.LineBreak := #10; // Hakchi kernel will give c8 errors for Dos LineFeeds
 
   StatusPanel := StatusBar.Panels.Items[1];
