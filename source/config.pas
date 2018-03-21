@@ -25,24 +25,68 @@ unit config;
 interface
 
 uses
-  Classes, SysUtils, Inifiles, CheckLst, EditBtn,
+  Classes, SysUtils, Inifiles, CheckLst, EditBtn, DateUtils,
   futils;
 
 function SaveConfig(XMLEdit:String; GamesEdit:String; LastFavFolder:String; ViewStyle:Integer; CheckListBox:TCheckListBox):Boolean;
 function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBox:TCheckListBox; var ViewStyle:Integer; var LastFavFolder:String):Boolean;
+function GetSavedChecked(XMLEdit:String):String;
 
 implementation
+
+function GetSavedChecked(XMLEdit:String):String;
+var
+  AppPath,Res: String;
+  Ini: TIniFile;
+  i,j: Integer;
+begin
+  AppPath := ExtractFilePath(ParamStr(0));
+  Ini := TIniFile.Create(AppPath+'config.ini');
+  Res := '';
+  try
+    for i := 0 to 2 do
+      begin
+        j := i+1;
+        if (XMLEdit = Ini.ReadString('games','path'+inttostr(j),'')) then
+          begin
+            Res := Ini.ReadString('games', 'checked'+inttostr(j),'');
+            break;
+          end;
+      end;
+  finally
+    Ini.Free;
+  end;
+  GetSavedChecked := Res;
+end;
 
 function SaveConfig(XMLEdit:String; GamesEdit:String; LastFavFolder:String; ViewStyle:Integer; CheckListBox:TCheckListBox):Boolean;
 var
   Ini: TIniFile;
   AppPath,CheckedGames: String;
-  i: integer;
+  savedPath: Array [0..2] of String;
+  savedGames: Array [0..2] of String;
+  savedStamp: Array [0..2] of Int64;
+  i,j,thispath,emptypath,oldestPath: integer;
+  oldestStamp: Int64;
 begin
   AppPath := ExtractFilePath(ParamStr(0));
+  thispath := High(savedPath)+1;
+  emptypath := thispath;
+  oldestPath := thispath;
+  oldestStamp := DateTimeToUnix(Now);
   Ini := TIniFile.Create(AppPath+'config.ini');
   try
     CheckedGames := '';
+    for i := 0 to High(savedPath) do
+      begin
+        j := i+1;
+        savedPath[i] := Ini.ReadString('games','path'+inttostr(j),'');
+        savedGames[i] := Ini.ReadString('games','checked'+inttostr(j),'');
+        savedStamp[i] := Ini.ReadInt64('games','timestamp'+inttostr(j),DateTimeToUnix(Now));
+        if (savedPath[i] = XMLEdit) then thispath := i;
+        if (savedPath[i] = '') and (i < emptypath) then emptypath := i;
+        if (savedStamp[i] < oldestStamp) then oldestPath := i;
+      end;
     Ini.WriteString('config','XMLFile',XMLEdit);
     Ini.WriteString('config','gamesfolder',GamesEdit);
     Ini.WriteString('config','lastfav',LastFavFolder);
@@ -53,6 +97,30 @@ begin
       end;
     CheckedGames := StringReplace(Trim(CheckedGames),' ',',',[rfReplaceAll]);
     Ini.WriteString('config','checked',CheckedGames);
+    if (thispath < High(savedPath)) then
+      begin
+        savedGames[thispath] := CheckedGames;
+        savedStamp[thispath] := DateTimeToUnix(Now);
+      end
+    else if (emptypath < High(savedPath)) then
+      begin
+        savedPath[emptypath] := XMLEdit;
+        savedGames[emptypath] := CheckedGames;
+        savedStamp[emptypath] := DateTimeToUnix(Now);
+      end
+    else
+      begin
+        savedPath[oldestpath] := XMLEdit;
+        savedGames[oldestpath] := CheckedGames;
+        savedStamp[oldestpath] := DateTimeToUnix(Now);
+      end;
+    for i := 0 to High(savedPath) do
+      begin
+        j := i+1;
+        Ini.WriteString('games','path'+inttostr(j),savedPath[i]);
+        Ini.WriteString('games','checked'+inttostr(j),savedGames[i]);
+        Ini.WriteInt64('games','timestamp'+inttostr(j),savedStamp[i]);
+      end;
   finally
     Ini.Free;
   end;
@@ -63,7 +131,7 @@ function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBo
 var
   Ini: TIniFile;
   ChkStringList: TStringList;
-  AppPath,CheckedGames: String;
+  AppPath,savedPath,CheckedGames: String;
   i,j: integer;
 begin
   AppPath := ExtractFilePath(ParamStr(0));
@@ -76,6 +144,16 @@ begin
     LastFavFolder := Ini.ReadString('config','lastfav','');
     CheckedGames := Ini.ReadString('config','checked','');
     ViewStyle := Ini.ReadInteger('config','view',1);
+    for i := 0 to 2 do
+      begin
+        j := i+1;
+        savedPath := Ini.ReadString('games','path'+inttostr(j),'');
+        if (savedPath = XMLEdit.Caption) then
+          begin
+            CheckedGames := Ini.ReadString('games','checked'+inttostr(j),'');
+            break;
+          end;
+      end;
     if (FileExists(XMLEdit.Caption)) then LoadGamesList(CheckListBox,XMLEdit.Caption,ViewStyle);
     ChkStringList.Clear;
     ChkStringList.Delimiter := ',';

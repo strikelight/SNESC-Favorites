@@ -136,11 +136,39 @@ begin
 end;
 
 procedure TForm1.LoadBtnClick(Sender: TObject);
+var
+  ChkStringList: TStringList;
+  CheckedGames: String;
+  i,j: Integer;
 begin
   if (XMLEdit.Caption = '') or (not FileExists(XMLEdit.Caption)) then exit;
   CheckListBox1.Clear;
   SetLength(GameCodes,0);
   LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
+  CheckedGames := GetSavedChecked(XMLEdit.Caption);
+  if (CheckedGames <> '') then
+    begin
+      ChkStringList := TStringList.Create;
+      try
+        ChkStringList.Clear;
+        ChkStringList.Delimiter := ',';
+        ChkStringList.StrictDelimiter := True;
+        ChkStringList.DelimitedText := CheckedGames;
+        for i := 0 to (ChkStringList.Count-1) do
+          begin
+            for j := 0 to (Length(GameCodes)-1) do
+              begin
+                if (GameCodes[j] = ChkStringList[i]) then
+                  begin
+                    CheckListBox1.Checked[j] := True;
+                    break;
+                  end;
+              end;
+          end;
+      finally
+        ChkStringList.Free;
+      end;
+    end;
   GetCheckCount(CheckListBox1,StatusPanel0,True);
 end;
 
@@ -196,6 +224,7 @@ begin
       ProgressBar.Visible:= False;;
       statusPanel1.Text:='';
       GetCheckCount(CheckListBox1, StatusBar1.Panels.Items[0], True);
+      SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
     end;
 end;
 
