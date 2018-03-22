@@ -162,6 +162,13 @@ object Form1: TForm1
           Caption = 'Parent and Child folders'
           OnClick = ParentChildOptionClick
         end
+        object MenuItem8: TMenuItem
+          Caption = '-'
+        end
+        object SelectedOption: TMenuItem
+          Caption = 'Selected games only'
+          OnClick = SelectedOptionClick
+        end
       end
     end
     object MenuItem2: TMenuItem

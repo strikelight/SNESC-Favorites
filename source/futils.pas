@@ -27,24 +27,53 @@ interface
 uses
   Classes, SysUtils, RegExpr, CheckLst, Dialogs, FileUtil, ComCtrls;
 
-function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer):Boolean;
+function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer; ViewSelected:Boolean; CheckedGames:String):Boolean;
 function GetLastFolderNumber(Path: String):String;
 function GenerateFolderName(Number: String):String;
 function CreateFaveLinks(ConsolePath: String; GamesList: TCheckListBox; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
-function UpdateXML(Filename: String; GamesList: TCheckListBox):Boolean;
+function IsGameChecked(CheckedGames:String; GameCode:String):Boolean;
 
 var
   GameCodes : Array of String;
 
 implementation
 
+function IsGameChecked(CheckedGames:String; GameCode:String):Boolean;
+var
+  ChkStringList: TStringList;
+  i: integer;
+  Res: Boolean;
+begin
+  Res := False;
+  if (CheckedGames <> '') then
+    begin
+      ChkStringList := TStringList.Create;
+      try
+        ChkStringList.Clear;
+        ChkStringList.Delimiter := ',';
+        ChkStringList.StrictDelimiter := True;
+        ChkStringList.DelimitedText := CheckedGames;
+        for i := 0 to (ChkStringList.Count-1) do
+          begin
+            if (ChkStringList[i] = GameCode) then
+              begin
+                Res := True;
+                break;
+              end;
+          end;
+      finally
+        ChkStringList.Free;
+      end;
+    end;
+  IsGameChecked := Res;
+end;
 
-function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer):Boolean;
+function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer; ViewSelected:Boolean; CheckedGames:String):Boolean;
 var
   FStringList: TStringList;
   i,j: integer;
   s,t,u: String;
-  fh: Boolean;
+  fh,isChecked: Boolean;
   RegexObj: TRegExpr;
 begin
   fh := False;
@@ -107,10 +136,15 @@ begin
             RegExObj := TRegExpr.Create('Game code="(.*?)" name="(.*?)"');
             if RegExObj.Exec(s) then
               begin
-                CheckListBox.Items.Add(RegExObj.Match[2]);
-                inc(j);
-                SetLength(GameCodes,j);
-                GameCodes[j-1] := RegExObj.Match[1];
+                isChecked := IsGameChecked(CheckedGames, RegExObj.Match[1]);
+                if (not ViewSelected) OR (ViewSelected AND IsChecked) then
+                  begin
+                    CheckListBox.Items.Add(RegExObj.Match[2]);
+                    inc(j);
+                    SetLength(GameCodes,j);
+                    GameCodes[j-1] := RegExObj.Match[1];
+                    CheckListBox.Checked[j-1] := IsChecked;
+                  end;
               end;
             RegExObj.Free;
           end;
@@ -279,72 +313,6 @@ begin
     EmptyFile.Free;
   end;
   CreateFaveLinks := True;
-end;
-
-// Updates XML but Hakchi gui overrides it.  Method does not work.
-function UpdateXML(Filename: String; GamesList: TCheckListBox):Boolean;
-var
-  FStringList,NewStringList: TStringList;
-  FavMatch: Boolean;
-  g,s,t : String;
-  i,j : integer;
-begin
-  if not FileExists(Filename) then
-    begin
-      UpdateXML := False;
-      exit;
-    end;
-
-  FavMatch := False;
-  FStringList := TStringList.Create;
-  NewStringList := TStringList.Create;
-
-  try
-    FStringList.LoadFromFile(Filename);
-    for i:=0 to FStringList.Count-1 do
-      begin
-        s := FStringList[i];
-        if (Pos('  <Folder name="Favorites"',s) = 1) then
-          begin
-            FavMatch := True;
-          end
-        else if (Pos('</Tree>',s) = 1) then
-          begin
-            NewStringList.Add('  <Folder name="Favorites" icon="favorites" position="3">');
-            for j := 0 to GamesList.Count-1 do
-              begin
-                g := GamesList.Items[j];
-                if (g[1] <> '-') and (g[1] <> '=') and (GamesList.Checked[j]) then
-                  begin
-                    if (Length(GameCodes[j]) > 0) then
-                      begin
-                        t := StringReplace(g,'&','&amp;',[rfReplaceAll, rfIgnoreCase]);
-                        NewStringList.Add('    <Game code="'+GameCodes[j]+'" name="'+t+'" />');
-                      end;
-                  end;
-              end;
-            NewStringList.Add('  </Folder>');
-            NewStringList.Add('</Tree>');
-          end
-        else if (FavMatch) then
-          begin
-            if (Pos('  </Folder>',s) = 1) then
-              begin
-                FavMatch := False;
-              end;
-          end
-        else
-          begin
-            NewStringList.Add(s);
-          end;
-      end;
-
-    NewStringList.SaveToFile('test.xml');
-  finally
-    if Assigned(FStringList) then FreeAndNil(FStringList);
-  end;
-
-  UpdateXML := True;
 end;
 
 end.
