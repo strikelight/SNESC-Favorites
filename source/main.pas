@@ -90,7 +90,7 @@ var
 
 const
   pName = 'SNESC Favorites';
-  pVersion = '1.0.2-beta';
+  pVersion = '1.0.0';
 
 implementation
 
@@ -202,11 +202,7 @@ var
 begin
   fname := GamesEdit.Caption;
   fname := fname + '\';
-  if (fname = '') or (not DirectoryExists(fname)) then
-    begin
-      ShowMessage('Error: Supplied games folder path does not exist.');
-      exit;
-    end;
+  statusPanel0.Text:='';
   if (LastFavFolder <> '') then
     begin
       if (not FileExists(fname+LastFavFolder+'\.fav')) then
@@ -220,7 +216,7 @@ begin
       else
         LastFavFolder := GenerateFolderName(GetLastFolderNumber(fname));
     end;
-  statusPanel0.Text:='';
+  if (fname = '') or (not DirectoryExists(fname)) then exit;
   Res := CreateFaveLinks(fname,CheckListBox1,ProgressBar,StatusBar1,LastFavFolder);
   if (MessageDlg('Save','Completed.',mtInformation,[mbOk],0) = mrOk) then
     begin
