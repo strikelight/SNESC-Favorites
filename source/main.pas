@@ -87,10 +87,11 @@ var
   Form1: TForm1;
   LastFavFolder: String;
   ViewStyle: Integer;
+  LastUsedXML: String;
 
 const
   pName = 'SNESC Favorites';
-  pVersion = '1.0.0';
+  pVersion = '1.0.2-beta';
 
 implementation
 
@@ -116,6 +117,7 @@ begin
   progressBar.Visible:=False;
   LastFavFolder := '';
   LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,LastFavFolder);
+  LastUsedXML:=XMLEdit.Caption;
   GetCheckCount(CheckListBox1, StatusBar1.Panels.Items[0], True);
   FlatOption.Checked:=False;
   ParentOption.Checked:=False;
@@ -141,7 +143,12 @@ var
   CheckedGames: String;
   i,j: Integer;
 begin
-  if (XMLEdit.Caption = '') or (not FileExists(XMLEdit.Caption)) then exit;
+  if (XMLEdit.Caption = '') or (not FileExists(XMLEdit.Caption)) then
+    begin
+      ShowMessage('Error: Supplied XML filename invalid.');
+      exit;
+    end;
+  LastUsedXML := XMLEdit.Caption;
   CheckListBox1.Clear;
   SetLength(GameCodes,0);
   LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
@@ -202,7 +209,16 @@ var
 begin
   fname := GamesEdit.Caption;
   fname := fname + '\';
-  statusPanel0.Text:='';
+  if (fname = '') or (not DirectoryExists(fname)) then
+    begin
+      ShowMessage('Error: Supplied games folder path does not exist.');
+      exit;
+    end;
+  if (LastUsedXML <> XMLEdit.Caption) then
+    begin
+      ShowMessage('Warning: New XML filename entered, please click load button first.');
+      exit;
+    end;
   if (LastFavFolder <> '') then
     begin
       if (not FileExists(fname+LastFavFolder+'\.fav')) then
@@ -216,7 +232,7 @@ begin
       else
         LastFavFolder := GenerateFolderName(GetLastFolderNumber(fname));
     end;
-  if (fname = '') or (not DirectoryExists(fname)) then exit;
+  statusPanel0.Text:='';
   Res := CreateFaveLinks(fname,CheckListBox1,ProgressBar,StatusBar1,LastFavFolder);
   if (MessageDlg('Save','Completed.',mtInformation,[mbOk],0) = mrOk) then
     begin
@@ -266,7 +282,7 @@ begin
   FlatOption.Checked:=True;
   ParentOption.Checked:=False;
   ParentChildOption.Checked:=False;
-  SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
   LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,LastFavFolder);
 //  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
 end;
@@ -277,7 +293,7 @@ begin
   FlatOption.Checked:=False;
   ParentOption.Checked:=True;
   ParentChildOption.Checked:=False;
-  SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
   LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,LastFavFolder);
 //  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
 end;
@@ -288,14 +304,14 @@ begin
   FlatOption.Checked:=False;
   ParentOption.Checked:=False;
   ParentChildOption.Checked:=True;
-  SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
   LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,LastFavFolder);
 //  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
-  SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,CheckListBox1);
 end;
 
 end.
