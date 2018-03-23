@@ -27,16 +27,35 @@ interface
 uses
   Classes, SysUtils, RegExpr, CheckLst, Dialogs, FileUtil, ComCtrls;
 
-function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer; ViewSelected:Boolean; CheckedGames:String):Boolean;
+function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer; ViewSelected:Boolean; HomeName:String; CheckedGames:String):Boolean;
 function GetLastFolderNumber(Path: String):String;
 function GenerateFolderName(Number: String):String;
 function CreateFaveLinks(ConsolePath: String; GamesList: TCheckListBox; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
 function IsGameChecked(CheckedGames:String; GameCode:String):Boolean;
+function GetCode(Game: String; CheckListBox: TCheckListBox):String;
 
 var
   GameCodes : Array of String;
 
 implementation
+
+function GetCode(Game: String; CheckListBox: TCheckListBox):String;
+var
+  i: integer;
+  c,g: String;
+begin
+  c := '';
+  for i := 0 to CheckListBox.Count-1 do
+    begin
+      g := CheckListBox.Items[i];
+      if (g = Game) then
+        begin
+          c := GameCodes[i];
+          break;
+        end;
+    end;
+  GetCode := c;
+end;
 
 function IsGameChecked(CheckedGames:String; GameCode:String):Boolean;
 var
@@ -68,7 +87,7 @@ begin
   IsGameChecked := Res;
 end;
 
-function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer; ViewSelected:Boolean; CheckedGames:String):Boolean;
+function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer; ViewSelected:Boolean; HomeName:String; CheckedGames:String):Boolean;
 var
   FStringList: TStringList;
   i,j: integer;
@@ -127,10 +146,10 @@ begin
           begin
             if (Pos('  <Game',s) = 1) and (ViewStyle > 0) and (not fh) then
               begin
-                CheckListBox.Items.Add('-HOME');
+                CheckListBox.Items.Add('-'+HomeName);
                 inc(j);
                 SetLength(GameCodes,j);
-                GameCodes[j-1] := '000';
+                GameCodes[j-1] := 'HOME';
                 fh := True;
               end;
             RegExObj := TRegExpr.Create('Game code="(.*?)" name="(.*?)"');

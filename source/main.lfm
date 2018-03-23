@@ -22,6 +22,8 @@ object Form1: TForm1
     ItemHeight = 0
     OnDrawItem = CheckListBox1DrawItem
     OnItemClick = CheckListBox1ItemClick
+    OnMouseDown = CheckListBox1MouseDown
+    PopupMenu = PopupMenu1
     Style = lbOwnerDrawFixed
     TabOrder = 0
   end
@@ -242,6 +244,14 @@ object Form1: TForm1
         Caption = '&About'
         OnClick = MenuItem6Click
       end
+    end
+  end
+  object PopupMenu1: TPopupMenu
+    OnPopup = PopupMenu1Popup
+    left = 264
+    object RenameHome: TMenuItem
+      Caption = 'Rename'
+      OnClick = RenameHomeClick
     end
   end
 end

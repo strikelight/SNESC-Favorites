@@ -28,8 +28,8 @@ uses
   Classes, SysUtils, Inifiles, CheckLst, EditBtn, DateUtils, StdCtrls, Menus,
   futils;
 
-function SaveConfig(XMLEdit:String; GamesEdit:String; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; CheckListBox:TCheckListBox):Boolean;
-function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBox:TCheckListBox; var ViewStyle:Integer; var ViewSelected:Boolean; var LastFavFolder:String):Boolean;
+function SaveConfig(XMLEdit:String; GamesEdit:String; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; HomeName:String; CheckListBox:TCheckListBox):Boolean;
+function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBox:TCheckListBox; var ViewStyle:Integer; var ViewSelected:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
 function SaveSlot(Slot: Integer; CheckListBox:TCheckListBox; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
 function LoadSlot(Slot: Integer; CheckListBox:TCheckListBox; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
 function GetSavedChecked(Slot: Integer):String;
@@ -121,7 +121,7 @@ begin
   SaveSlot := True;
 end;
 
-function SaveConfig(XMLEdit:String; GamesEdit:String; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; CheckListBox:TCheckListBox):Boolean;
+function SaveConfig(XMLEdit:String; GamesEdit:String; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; HomeName:String; CheckListBox:TCheckListBox):Boolean;
 var
   Ini: TIniFile;
   AppPath,CheckedGames: String;
@@ -136,6 +136,7 @@ begin
     Ini.WriteString('config','lastfav',LastFavFolder);
     Ini.WriteInteger('config','view',ViewStyle);
     Ini.WriteBool('config','viewselect',ViewSelected);
+    Ini.WriteString('config','home',HomeName);
     for i := 0 to (CheckListBox.Count-1) do
       begin
         if (CheckListBox.Checked[i]) and (GameCodes[i] <> '') then CheckedGames := CheckedGames+' '+GameCodes[i];
@@ -148,7 +149,7 @@ begin
   SaveConfig := True;
 end;
 
-function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBox:TCheckListBox; var ViewStyle:Integer; var ViewSelected:Boolean; var LastFavFolder:String):Boolean;
+function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBox:TCheckListBox; var ViewStyle:Integer; var ViewSelected:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
 var
   Ini: TIniFile;
   ChkStringList: TStringList;
@@ -166,7 +167,8 @@ begin
     CheckedGames := Ini.ReadString('config','checked','');
     ViewStyle := Ini.ReadInteger('config','view',1);
     ViewSelected := Ini.ReadBool('config','viewselect',False);
-    if (FileExists(XMLEdit.Caption)) then LoadGamesList(CheckListBox,XMLEdit.Caption,ViewStyle,ViewSelected,CheckedGames);
+    HomeName := Ini.ReadString('config','home','HOME');
+    if (FileExists(XMLEdit.Caption)) then LoadGamesList(CheckListBox,XMLEdit.Caption,ViewStyle,ViewSelected,HomeName,CheckedGames);
     ChkStringList.Clear;
     ChkStringList.Delimiter := ',';
     ChkStringList.StrictDelimiter := True;
