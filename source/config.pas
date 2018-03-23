@@ -25,68 +25,112 @@ unit config;
 interface
 
 uses
-  Classes, SysUtils, Inifiles, CheckLst, EditBtn, DateUtils,
+  Classes, SysUtils, Inifiles, CheckLst, EditBtn, DateUtils, StdCtrls, Menus,
   futils;
 
 function SaveConfig(XMLEdit:String; GamesEdit:String; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; CheckListBox:TCheckListBox):Boolean;
 function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBox:TCheckListBox; var ViewStyle:Integer; var ViewSelected:Boolean; var LastFavFolder:String):Boolean;
-function GetSavedChecked(XMLEdit:String):String;
+function SaveSlot(Slot: Integer; CheckListBox:TCheckListBox; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
+function LoadSlot(Slot: Integer; CheckListBox:TCheckListBox; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
+function GetSavedChecked(Slot: Integer):String;
 
 implementation
 
-function GetSavedChecked(XMLEdit:String):String;
+function GetSavedChecked(Slot: Integer):String;
 var
   AppPath,Res: String;
   Ini: TIniFile;
-  i,j: Integer;
 begin
   AppPath := ExtractFilePath(ParamStr(0));
   Ini := TIniFile.Create(AppPath+'config.ini');
   Res := '';
   try
-    for i := 0 to 2 do
-      begin
-        j := i+1;
-        if (XMLEdit = Ini.ReadString('games','path'+inttostr(j),'')) then
-          begin
-            Res := Ini.ReadString('games', 'checked'+inttostr(j),'');
-            break;
-          end;
-      end;
+    if (Slot > 0) then
+      Res := Ini.ReadString('games', 'checked'+inttostr(Slot),'')
+    else
+      Res := Ini.ReadString('config', 'checked', '');
   finally
     Ini.Free;
   end;
   GetSavedChecked := Res;
 end;
 
+function LoadSlot(Slot:Integer; CheckListBox:TCheckListBox; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
+var
+  Ini: TIniFile;
+  AppPath,CheckedGames: String;
+  ChkStringList: TStringList;
+  i,j: Integer;
+begin
+  AppPath := ExtractFilePath(ParamStr(0));
+  Ini := TIniFile.Create(AppPath+'config.ini');
+  ChkStringList := TStringList.Create;
+  try
+    SlotMenu.Caption := Ini.ReadString('games','name'+inttostr(Slot),'Slot '+inttostr(Slot));
+    if (not NameOnly) then
+      begin
+        CheckedGames := Ini.ReadString('games','checked'+inttostr(Slot),'');
+        ChkStringList.Clear;
+        ChkStringList.Delimiter := ',';
+        ChkStringList.StrictDelimiter := True;
+        ChkStringList.DelimitedText := CheckedGames;
+        CheckListBox.CheckAll(cbUnchecked,False,False);
+        for i := 0 to (ChkStringList.Count-1) do
+          begin
+            for j := 0 to (Length(GameCodes)-1) do
+              begin
+                if (GameCodes[j] = ChkStringList[i]) then
+                  begin
+                    CheckListBox.Checked[j] := True;
+                    break;
+                  end;
+              end;
+          end;
+      end;
+  finally
+    Ini.Free;
+    ChkStringList.Free;
+  end;
+  LoadSlot := True;
+end;
+
+function SaveSlot(Slot:Integer; CheckListBox:TCheckListBox; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
+var
+  Ini: TIniFile;
+  AppPath,CheckedGames: String;
+  i: Integer;
+begin
+  AppPath := ExtractFilePath(ParamStr(0));
+  Ini := TIniFile.Create(AppPath+'config.ini');
+
+  try
+    CheckedGames := '';
+    Ini.WriteString('games','name'+inttostr(Slot),SlotMenu.Caption);
+    if (not NameOnly) then
+      begin
+        for i := 0 to (CheckListBox.Count-1) do
+          begin
+            if (CheckListBox.Checked[i]) and (GameCodes[i] <> '') then CheckedGames := CheckedGames+' '+GameCodes[i];
+          end;
+        CheckedGames := StringReplace(Trim(CheckedGames),' ',',',[rfReplaceAll]);
+        Ini.WriteString('games','checked'+inttostr(Slot),CheckedGames);
+      end;
+  finally
+    Ini.Free;
+  end;
+  SaveSlot := True;
+end;
+
 function SaveConfig(XMLEdit:String; GamesEdit:String; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; CheckListBox:TCheckListBox):Boolean;
 var
   Ini: TIniFile;
   AppPath,CheckedGames: String;
-  savedPath: Array [0..2] of String;
-  savedGames: Array [0..2] of String;
-  savedStamp: Array [0..2] of Int64;
-  i,j,thispath,emptypath,oldestPath: integer;
-  oldestStamp: Int64;
+  i: integer;
 begin
   AppPath := ExtractFilePath(ParamStr(0));
-  thispath := High(savedPath)+1;
-  emptypath := thispath;
-  oldestPath := thispath;
-  oldestStamp := DateTimeToUnix(Now);
   Ini := TIniFile.Create(AppPath+'config.ini');
   try
     CheckedGames := '';
-    for i := 0 to High(savedPath) do
-      begin
-        j := i+1;
-        savedPath[i] := Ini.ReadString('games','path'+inttostr(j),'');
-        savedGames[i] := Ini.ReadString('games','checked'+inttostr(j),'');
-        savedStamp[i] := Ini.ReadInt64('games','timestamp'+inttostr(j),DateTimeToUnix(Now));
-        if (savedPath[i] = XMLEdit) then thispath := i;
-        if (savedPath[i] = '') and (i < emptypath) then emptypath := i;
-        if (savedStamp[i] < oldestStamp) then oldestPath := i;
-      end;
     Ini.WriteString('config','XMLFile',XMLEdit);
     Ini.WriteString('config','gamesfolder',GamesEdit);
     Ini.WriteString('config','lastfav',LastFavFolder);
@@ -98,30 +142,6 @@ begin
       end;
     CheckedGames := StringReplace(Trim(CheckedGames),' ',',',[rfReplaceAll]);
     Ini.WriteString('config','checked',CheckedGames);
-    if (thispath < High(savedPath)) then
-      begin
-        savedGames[thispath] := CheckedGames;
-        savedStamp[thispath] := DateTimeToUnix(Now);
-      end
-    else if (emptypath < High(savedPath)) then
-      begin
-        savedPath[emptypath] := XMLEdit;
-        savedGames[emptypath] := CheckedGames;
-        savedStamp[emptypath] := DateTimeToUnix(Now);
-      end
-    else
-      begin
-        savedPath[oldestpath] := XMLEdit;
-        savedGames[oldestpath] := CheckedGames;
-        savedStamp[oldestpath] := DateTimeToUnix(Now);
-      end;
-    for i := 0 to High(savedPath) do
-      begin
-        j := i+1;
-        Ini.WriteString('games','path'+inttostr(j),savedPath[i]);
-        Ini.WriteString('games','checked'+inttostr(j),savedGames[i]);
-        Ini.WriteInt64('games','timestamp'+inttostr(j),savedStamp[i]);
-      end;
   finally
     Ini.Free;
   end;
@@ -132,7 +152,7 @@ function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBo
 var
   Ini: TIniFile;
   ChkStringList: TStringList;
-  AppPath,savedPath,CheckedGames: String;
+  AppPath,CheckedGames: String;
   i,j: integer;
 begin
   AppPath := ExtractFilePath(ParamStr(0));
@@ -146,16 +166,6 @@ begin
     CheckedGames := Ini.ReadString('config','checked','');
     ViewStyle := Ini.ReadInteger('config','view',1);
     ViewSelected := Ini.ReadBool('config','viewselect',False);
-    for i := 0 to 2 do
-      begin
-        j := i+1;
-        savedPath := Ini.ReadString('games','path'+inttostr(j),'');
-        if (savedPath = XMLEdit.Caption) then
-          begin
-            CheckedGames := Ini.ReadString('games','checked'+inttostr(j),'');
-            break;
-          end;
-      end;
     if (FileExists(XMLEdit.Caption)) then LoadGamesList(CheckListBox,XMLEdit.Caption,ViewStyle,ViewSelected,CheckedGames);
     ChkStringList.Clear;
     ChkStringList.Delimiter := ',';

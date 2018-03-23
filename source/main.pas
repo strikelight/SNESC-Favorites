@@ -38,6 +38,22 @@ type
     LoadBtn: TButton;
     GamesEdit: TDirectoryEdit;
     Label3: TLabel;
+    MenuItem10: TMenuItem;
+    LoadSlot1: TMenuItem;
+    LoadSlot2: TMenuItem;
+    LoadSlot3: TMenuItem;
+    MenuItem11: TMenuItem;
+    MenuItem12: TMenuItem;
+    MenuItem13: TMenuItem;
+    SlotName3: TMenuItem;
+    SlotName2: TMenuItem;
+    SlotName1: TMenuItem;
+    SaveSlot3: TMenuItem;
+    SaveSlot2: TMenuItem;
+    SaveSlot1: TMenuItem;
+    PSlot3: TMenuItem;
+    PSlot2: TMenuItem;
+    PSlot1: TMenuItem;
     MenuItem3: TMenuItem;
     MenuItem4: TMenuItem;
     MenuItem5: TMenuItem;
@@ -45,6 +61,7 @@ type
     MenuItem7: TMenuItem;
     FlatOption: TMenuItem;
     MenuItem8: TMenuItem;
+    MenuItem9: TMenuItem;
     SelectedOption: TMenuItem;
     ParentChildOption: TMenuItem;
     ParentOption: TMenuItem;
@@ -68,6 +85,9 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure LoadBtnClick(Sender: TObject);
+    procedure LoadSlot1Click(Sender: TObject);
+    procedure LoadSlot2Click(Sender: TObject);
+    procedure LoadSlot3Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
@@ -75,7 +95,13 @@ type
     procedure ParentChildOptionClick(Sender: TObject);
     procedure ParentOptionClick(Sender: TObject);
     procedure SaveBtnClick(Sender: TObject);
+    procedure SaveSlot1Click(Sender: TObject);
+    procedure SaveSlot2Click(Sender: TObject);
+    procedure SaveSlot3Click(Sender: TObject);
     procedure SelectedOptionClick(Sender: TObject);
+    procedure SlotName1Click(Sender: TObject);
+    procedure SlotName2Click(Sender: TObject);
+    procedure SlotName3Click(Sender: TObject);
   private
     { private declarations }
     progressBar: TProgressBar;
@@ -103,8 +129,6 @@ implementation
 
 { TForm1 }
 
-
-
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   Form1.Caption := pName+' - '+pVersion;
@@ -121,6 +145,9 @@ begin
   progressBar.Visible:=False;
   LastFavFolder := '';
   LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
+  LoadSlot(1,CheckListBox1,PSlot1,True);
+  LoadSlot(2,CheckListBox1,PSlot2,True);
+  LoadSlot(3,CheckListBox1,PSlot3,True);
   LastUsedXML:=XMLEdit.Caption;
   GetCheckCount(CheckListBox1, StatusBar1.Panels.Items[0], True);
   FlatOption.Checked:=False;
@@ -132,6 +159,7 @@ begin
        1: ParentOption.Checked:=True;
        2: ParentChildOption.Checked:=True;
   end;
+
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
@@ -154,8 +182,89 @@ begin
   LastUsedXML := XMLEdit.Caption;
   CheckListBox1.Clear;
   SetLength(GameCodes,0);
-  CheckedGames := GetSavedChecked(XMLEdit.Caption);
+  PSlot1.Checked := False;
+  PSlot2.Checked := False;
+  PSlot3.Checked := False;
+  CheckedGames := GetSavedChecked(0);
   LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle,ViewSelected,CheckedGames);
+  GetCheckCount(CheckListBox1,StatusPanel0,True);
+end;
+
+procedure TForm1.LoadSlot1Click(Sender: TObject);
+var
+  oViewSelected: Boolean;
+begin
+  PSlot1.Checked := True;
+  PSlot2.Checked := False;
+  PSlot3.Checked := False;
+  oViewSelected := ViewSelected;
+  if ViewSelected then
+    begin
+      ViewSelected := False;
+      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
+    end
+  else
+    SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
+  LoadSlot(1,CheckListBox1,PSlot1);
+  if oViewSelected then
+    begin
+      ViewSelected := oViewSelected;
+      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
+    end;
+  GetCheckCount(CheckListBox1,StatusPanel0,True);
+end;
+
+procedure TForm1.LoadSlot2Click(Sender: TObject);
+var
+  oViewSelected: Boolean;
+begin
+  PSlot1.Checked := False;
+  PSlot2.Checked := True;
+  PSlot3.Checked := False;
+  oViewSelected := ViewSelected;
+  if ViewSelected then
+    begin
+      ViewSelected := False;
+      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
+    end
+  else
+    SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
+  LoadSlot(2,CheckListBox1,PSlot2);
+  if oViewSelected then
+    begin
+      ViewSelected := oViewSelected;
+      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
+    end;
+  GetCheckCount(CheckListBox1,StatusPanel0,True);
+end;
+
+procedure TForm1.LoadSlot3Click(Sender: TObject);
+var
+  oViewSelected: Boolean;
+begin
+  PSlot1.Checked := False;
+  PSlot2.Checked := False;
+  PSlot3.Checked := True;
+  oViewSelected := ViewSelected;
+  if ViewSelected then
+    begin
+      ViewSelected := False;
+      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
+    end
+  else
+    SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
+  LoadSlot(3,CheckListBox1,PSlot3);
+  if oViewSelected then
+    begin
+      ViewSelected := oViewSelected;
+      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
+    end;
   GetCheckCount(CheckListBox1,StatusPanel0,True);
 end;
 
@@ -217,10 +326,43 @@ begin
   if (MessageDlg('Save','Completed.',mtInformation,[mbOk],0) = mrOk) then
     begin
       ProgressBar.Position:=0;
-      ProgressBar.Visible:= False;;
+      ProgressBar.Visible:= False;
       statusPanel1.Text:='';
       GetCheckCount(CheckListBox1, StatusBar1.Panels.Items[0], True);
       SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
+    end;
+end;
+
+procedure TForm1.SaveSlot1Click(Sender: TObject);
+begin
+  if (SaveSlot(1,CheckListBox1,PSlot1)) then
+    begin
+      ShowMessage('Successfully saved selected favorites to preset slot 1');
+      PSlot1.Checked := True;
+      PSlot2.Checked := False;
+      PSlot3.Checked := False;
+    end;
+end;
+
+procedure TForm1.SaveSlot2Click(Sender: TObject);
+begin
+  if (SaveSlot(2,CheckListBox1,PSlot2)) then
+    begin
+      ShowMessage('Successfully saved selected favorites to preset slot 2');
+      PSlot1.Checked := False;
+      PSlot2.Checked := True;
+      PSlot3.Checked := False;
+    end;
+end;
+
+procedure TForm1.SaveSlot3Click(Sender: TObject);
+begin
+  if (SaveSlot(3,CheckListBox1,PSlot3)) then
+    begin
+      ShowMessage('Successfully saved selected favorites to preset slot 3');
+      PSlot1.Checked := False;
+      PSlot2.Checked := False;
+      PSlot3.Checked := True;
     end;
 end;
 
@@ -231,8 +373,39 @@ begin
   SelectedOption.Checked := ViewSelected;
   SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
   LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
-//  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
+end;
 
+procedure TForm1.SlotName1Click(Sender: TObject);
+var
+  SlotName: String;
+begin
+  SlotName := Trim(InputBox('Slot Name','Please enter a name for this preset',''));
+  if (SlotName = '') then exit;
+  if (length(SlotName) > 15) then SlotName := Copy(SlotName, 1, 15);
+  PSlot1.Caption := SlotName;
+  SaveSlot(1,CheckListBox1,PSlot1,True);
+end;
+
+procedure TForm1.SlotName2Click(Sender: TObject);
+var
+  SlotName: String;
+begin
+  SlotName := Trim(InputBox('Slot Name','Please enter a name for this preset',''));
+  if (SlotName = '') then exit;
+  if (length(SlotName) > 15) then SlotName := Copy(SlotName, 1, 15);
+  PSlot2.Caption := SlotName;
+  SaveSlot(2,CheckListBox1,PSlot2,True);
+end;
+
+procedure TForm1.SlotName3Click(Sender: TObject);
+var
+  SlotName: String;
+begin
+  SlotName := Trim(InputBox('Slot Name','Please enter a name for this preset',''));
+  if (SlotName = '') then exit;
+  if (length(SlotName) > 15) then SlotName := Copy(SlotName, 1, 15);
+  PSlot3.Caption := SlotName;
+  SaveSlot(3,CheckListBox1,PSlot3,True);
 end;
 
 procedure TForm1.CheckListBox1DrawItem(Control: TWinControl; Index: Integer;
@@ -280,7 +453,6 @@ begin
   ParentChildOption.Checked:=False;
   SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
   LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
-//  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
 end;
 
 procedure TForm1.ParentOptionClick(Sender: TObject);
@@ -291,7 +463,6 @@ begin
   ParentChildOption.Checked:=False;
   SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
   LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
-//  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
 end;
 
 procedure TForm1.ParentChildOptionClick(Sender: TObject);
@@ -302,7 +473,6 @@ begin
   ParentChildOption.Checked:=True;
   SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,CheckListBox1);
   LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder);
-//  LoadGamesList(CheckListBox1,XMLEdit.Caption,ViewStyle);
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);

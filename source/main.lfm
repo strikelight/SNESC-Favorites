@@ -170,6 +170,67 @@ object Form1: TForm1
           OnClick = SelectedOptionClick
         end
       end
+      object MenuItem9: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem10: TMenuItem
+        Caption = 'Presets'
+        Enabled = False
+      end
+      object PSlot1: TMenuItem
+        Caption = 'Slot 1'
+        object LoadSlot1: TMenuItem
+          Caption = 'Load'
+          OnClick = LoadSlot1Click
+        end
+        object SaveSlot1: TMenuItem
+          Caption = 'Save'
+          OnClick = SaveSlot1Click
+        end
+        object MenuItem11: TMenuItem
+          Caption = '-'
+        end
+        object SlotName1: TMenuItem
+          Caption = 'Rename'
+          OnClick = SlotName1Click
+        end
+      end
+      object PSlot2: TMenuItem
+        Caption = 'Slot 2'
+        object LoadSlot2: TMenuItem
+          Caption = 'Load'
+          OnClick = LoadSlot2Click
+        end
+        object SaveSlot2: TMenuItem
+          Caption = 'Save'
+          OnClick = SaveSlot2Click
+        end
+        object MenuItem12: TMenuItem
+          Caption = '-'
+        end
+        object SlotName2: TMenuItem
+          Caption = 'Rename'
+          OnClick = SlotName2Click
+        end
+      end
+      object PSlot3: TMenuItem
+        Caption = 'Slot 3'
+        object LoadSlot3: TMenuItem
+          Caption = 'Load'
+          OnClick = LoadSlot3Click
+        end
+        object SaveSlot3: TMenuItem
+          Caption = 'Save'
+          OnClick = SaveSlot3Click
+        end
+        object MenuItem13: TMenuItem
+          Caption = '-'
+        end
+        object SlotName3: TMenuItem
+          Caption = 'Rename'
+          OnClick = SlotName3Click
+        end
+      end
     end
     object MenuItem2: TMenuItem
       Caption = '&Help'
