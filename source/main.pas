@@ -47,8 +47,13 @@ type
     MenuItem13: TMenuItem;
     MenuItem14: TMenuItem;
     MenuItem15: TMenuItem;
+    MenuItem16: TMenuItem;
+    MenuItem17: TMenuItem;
+    RestoreXMLDlg: TOpenDialog;
     RenameHome: TMenuItem;
     PopupMenu1: TPopupMenu;
+    BackupXMLDlg: TSaveDialog;
+    HakchiConfigDlg: TSelectDirectoryDialog;
     SlotName3: TMenuItem;
     SlotName2: TMenuItem;
     SlotName1: TMenuItem;
@@ -80,6 +85,7 @@ type
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
+    procedure BackupXMLDlgFolderChange(Sender: TObject);
     procedure CheckListBox1DrawItem(Control: TWinControl; Index: Integer;
       ARect: TRect; State: TOwnerDrawState);
     procedure CheckListBox1ItemClick(Sender: TObject; Index: integer);
@@ -95,6 +101,8 @@ type
     procedure LoadSlot2Click(Sender: TObject);
     procedure LoadSlot3Click(Sender: TObject);
     procedure MenuItem15Click(Sender: TObject);
+    procedure MenuItem16Click(Sender: TObject);
+    procedure MenuItem17Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
@@ -291,6 +299,16 @@ begin
     end;
 end;
 
+procedure TForm1.MenuItem16Click(Sender: TObject);
+begin
+  BackupXML(XMLEdit.Caption,BackupXMLDlg);
+end;
+
+procedure TForm1.MenuItem17Click(Sender: TObject);
+begin
+  RestoreXML(XMLEdit.Caption,RestoreXMLDlg,HakchiConfigDlg);
+end;
+
 procedure TForm1.MenuItem3Click(Sender: TObject);
 begin
   HelpForm.Visible:=True;
@@ -429,6 +447,11 @@ begin
   if (length(SlotName) > 15) then SlotName := Copy(SlotName, 1, 15);
   PSlot3.Caption := SlotName;
   SaveSlot(3,CheckListBox1,PSlot3,True);
+end;
+
+procedure TForm1.BackupXMLDlgFolderChange(Sender: TObject);
+begin
+
 end;
 
 procedure TForm1.CheckListBox1DrawItem(Control: TWinControl; Index: Integer;

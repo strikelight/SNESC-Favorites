@@ -24,7 +24,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, lazmouseandkeyinput, main, futils, ui_utils, config, help
+  Forms, lazmouseandkeyinput, main, futils, ui_utils, config, help, tools
   { you can add units after this };
 
 {$R *.res}

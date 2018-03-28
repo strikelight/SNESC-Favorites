@@ -24,9 +24,11 @@ unit tools;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, IniFiles, Dialogs, ComCtrls;
+  Classes, SysUtils, FileUtil, IniFiles, Dialogs, ComCtrls, Controls;
 
 function AddHomeIcons(Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
+function BackupXML (Filename: String; Dialog: TSaveDialog):Boolean;
+function RestoreXML (Filename: String; rDialog: TOpenDialog; hDialog: TSelectDirectoryDialog):Boolean;
 
 implementation
 
@@ -130,6 +132,74 @@ begin
     end;
   AddHomeIcons := True;
 end;
+
+function BackupXML (Filename: String; Dialog: TSaveDialog):Boolean;
+var
+  Path : String;
+begin
+  BackupXML := False;
+  if (not FileExists(Filename)) then
+    begin
+      ShowMessage('Error: File '+Filename+' does not exist.');
+      exit;
+    end;
+  Path := ExtractFilePath(ParamStr(0))+'Backups';
+  if (not DirectoryExists(Path)) then
+    if (not CreateDir(Path)) then
+      begin
+        ShowMessage('Error creating backup directory');
+        exit;
+      end;
+  Dialog.InitialDir := Path;
+  Dialog.Filter:='XML Files|*.xml';
+  Dialog.FileName := Path+'\backup.xml';
+  if (Dialog.Execute) then
+    begin
+      CopyFile(Filename,Dialog.FileName);
+      BackupXML := True;
+      ShowMessage('Successfully saved backup.');
+    end
+  else
+    ShowMessage('Backup cancelled.');
+end;
+
+function RestoreXML (Filename: String; rDialog: TOpenDialog; hDialog: TSelectDirectoryDialog):Boolean;
+var
+  Path : String;
+begin
+  RestoreXML := False;
+{  RestorePath := ExtractFilePath(Filename);
+  if (not FileExists(Filename)) then
+    begin
+      ShowMessage('Error: File '+Filename+' does not exist.');
+      exit;
+    end; }
+  Path := ExtractFilePath(ParamStr(0))+'Backups';
+  if (not DirectoryExists(Path)) then
+    if (not CreateDir(Path)) then
+      begin
+        ShowMessage('Error creating backup directory');
+        exit;
+      end;
+  rDialog.InitialDir := Path;
+  rDialog.Filter:='XML Files|*.xml';
+  rDialog.FileName := Path+'\backup.xml';
+  if (rDialog.Execute) then
+    begin
+      hDialog.InitialDir := ExtractFilePath(Filename);
+      hDialog.Title := 'Select your Hakchi config directory';
+      if (hDialog.Execute) then
+        if (MessageDlg('Warning','You are about to overwrite your existing folders_snes.xml file.'+#10#13+#10#13+'This operation cannot be undone.'+#10#13+#10#13+'Do you wish to continue?',mtWarning,[mbOk,mbCancel],0) = mrOk) then
+          begin
+            CopyFile(rDialog.FileName,Filename);
+            RestoreXML := True;
+            ShowMessage('Successfully restored backup.');
+          end;
+    end;
+  if (not RestoreXML) then
+    ShowMessage('Restore cancelled.');
+end;
+
 
 end.
 
