@@ -184,11 +184,15 @@ begin
   If (FindFirst(Path+'*',faDirectory,FD)=0) then
     begin
       SL := TStringList.Create;
-      repeat
-        SL.Add(FD.Name);
-      until (FindNext(FD) <> 0);
-      SL.Sort;
-      GetLastFolderNumber := SL[SL.Count-1];
+      try
+        repeat
+          SL.Add(FD.Name);
+        until (FindNext(FD) <> 0);
+        SL.Sort;
+        GetLastFolderNumber := SL[SL.Count-1];
+      finally
+        SL.Free;
+      end;
     end;
 end;
 
@@ -243,9 +247,7 @@ begin
         begin
           t := FolderSuff;
           Repeat
-            ShowMessage('t='+t);
             t := GenerateFolderName(t);
-            ShowMessage('t='+t);
           until (not DirectoryExists(ConsolePath+t));
           FolderSuff := t;
         end;

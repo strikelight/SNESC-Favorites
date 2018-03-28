@@ -28,7 +28,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
   ComCtrls, Types, StdCtrls, lcltype, lclintf, ExtCtrls, CheckLst, EditBtn,
-  MouseAndKeyInput, ui_utils, futils, config, help;
+  MouseAndKeyInput, ui_utils, futils, config, help, tools;
 
 type
 
@@ -45,6 +45,8 @@ type
     MenuItem11: TMenuItem;
     MenuItem12: TMenuItem;
     MenuItem13: TMenuItem;
+    MenuItem14: TMenuItem;
+    MenuItem15: TMenuItem;
     RenameHome: TMenuItem;
     PopupMenu1: TPopupMenu;
     SlotName3: TMenuItem;
@@ -92,6 +94,7 @@ type
     procedure LoadSlot1Click(Sender: TObject);
     procedure LoadSlot2Click(Sender: TObject);
     procedure LoadSlot3Click(Sender: TObject);
+    procedure MenuItem15Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
@@ -128,7 +131,7 @@ var
 
 const
   pName = 'SNESC Favorites';
-  pVersion = '1.0.2-beta';
+  pVersion = '1.0.6-beta';
 
 implementation
 
@@ -274,6 +277,18 @@ begin
       LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
     end;
   GetCheckCount(CheckListBox1,StatusPanel0,True);
+end;
+
+procedure TForm1.MenuItem15Click(Sender: TObject);
+begin
+  AddHomeIcons(GamesEdit.Caption,ProgressBar,StatusBar1);
+  if (MessageDlg('Update','Completed.',mtInformation,[mbOk],0) = mrOk) then
+    begin
+      ProgressBar.Position:=0;
+      ProgressBar.Visible:= False;
+      statusPanel1.Text:='';
+      GetCheckCount(CheckListBox1, StatusBar1.Panels.Items[0], True);
+    end;
 end;
 
 procedure TForm1.MenuItem3Click(Sender: TObject);
