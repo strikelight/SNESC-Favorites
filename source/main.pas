@@ -28,7 +28,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
   ComCtrls, Types, StdCtrls, lcltype, lclintf, ExtCtrls, CheckLst, EditBtn,
-  MouseAndKeyInput, ui_utils, futils, config, help, tools;
+  MouseAndKeyInput, ui_utils, futils, config, help, about, tools;
 
 type
 
@@ -85,7 +85,6 @@ type
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
-    procedure BackupXMLDlgFolderChange(Sender: TObject);
     procedure CheckListBox1DrawItem(Control: TWinControl; Index: Integer;
       ARect: TRect; State: TOwnerDrawState);
     procedure CheckListBox1ItemClick(Sender: TObject; Index: integer);
@@ -137,9 +136,6 @@ var
   LastUsedXML: String;
   HomeName: String;
 
-const
-  pName = 'SNESC Favorites';
-  pVersion = '1.0.6-beta';
 
 implementation
 
@@ -149,7 +145,7 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  Form1.Caption := pName+' - '+pVersion;
+  Form1.Caption := GetProductName+' - '+GetProductVersion;
   statusPanel0:=StatusBar1.Panels.Items[0];
   statusPanel0.Text:='StatusPanel0';
   statusPanel1:=StatusBar1.Panels.Items[1];
@@ -328,7 +324,8 @@ end;
 
 procedure TForm1.MenuItem6Click(Sender: TObject);
 begin
-  MessageDlg('About',pName+' '+pVersion+' by StrikeLight.'+#10#13+#10#13+'Released under the GNU Public License.',mtInformation,[mbOk],0);
+  UpdateAboutInfo;
+  AboutForm.ShowModal;
 end;
 
 procedure TForm1.SaveBtnClick(Sender: TObject);
@@ -447,11 +444,6 @@ begin
   if (length(SlotName) > 15) then SlotName := Copy(SlotName, 1, 15);
   PSlot3.Caption := SlotName;
   SaveSlot(3,CheckListBox1,PSlot3,True);
-end;
-
-procedure TForm1.BackupXMLDlgFolderChange(Sender: TObject);
-begin
-
 end;
 
 procedure TForm1.CheckListBox1DrawItem(Control: TWinControl; Index: Integer;

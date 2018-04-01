@@ -6,6 +6,7 @@ object HelpForm: THelpForm
   Caption = 'Help'
   ClientHeight = 341
   ClientWidth = 436
+  Position = poOwnerFormCenter
   LCLVersion = '1.8.2.0'
   object Memo1: TMemo
     Left = 0

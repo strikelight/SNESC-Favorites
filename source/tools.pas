@@ -168,12 +168,6 @@ var
   Path : String;
 begin
   RestoreXML := False;
-{  RestorePath := ExtractFilePath(Filename);
-  if (not FileExists(Filename)) then
-    begin
-      ShowMessage('Error: File '+Filename+' does not exist.');
-      exit;
-    end; }
   Path := ExtractFilePath(ParamStr(0))+'Backups';
   if (not DirectoryExists(Path)) then
     if (not CreateDir(Path)) then

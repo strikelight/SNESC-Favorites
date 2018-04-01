@@ -24,8 +24,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, lazmouseandkeyinput, main, futils, ui_utils, config, help, tools
-  { you can add units after this };
+  Forms, lazmouseandkeyinput, main, futils, ui_utils, config, help, tools,
+  about;
 
 {$R *.res}
 
@@ -35,6 +35,7 @@ begin
   Application.Initialize;
   Application.CreateForm(TForm1, Form1);
   Application.CreateForm(THelpForm, HelpForm);
+  Application.CreateForm(TAboutForm, AboutForm);
   Application.Run;
 end.
 

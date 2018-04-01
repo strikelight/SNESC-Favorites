@@ -13,8 +13,12 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
+      <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <StringTable CompanyName="strikelight" FileDescription="Create a favorites shortcut on SNES mini with selected games." OriginalFilename="snescfav.exe" ProductName="SNESC Favorites" ProductVersion="1.0.0"/>
+      <RevisionNr Value="7"/>
+      <BuildNr Value="1"/>
+      <Attributes pvaPreRelease="True"/>
+      <StringTable CompanyName="strikelight" FileDescription="Create a favorites shortcut on SNES mini with selected games." OriginalFilename="snescfav.exe" ProductName="SNESC Favorites" ProductVersion="1.0.7-beta"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -35,7 +39,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="snescfav.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -74,6 +78,12 @@
         <Filename Value="backup.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="about.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="AboutForm"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

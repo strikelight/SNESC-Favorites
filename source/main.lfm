@@ -135,7 +135,8 @@ object Form1: TForm1
     SimplePanel = False
   end
   object MainMenu1: TMainMenu
-    left = 208
+    left = 24
+    top = 40
     object MenuItem1: TMenuItem
       Caption = '&File'
       object MenuItem4: TMenuItem
@@ -176,7 +177,7 @@ object Form1: TForm1
         Caption = '-'
       end
       object MenuItem10: TMenuItem
-        Caption = 'Presets'
+        Caption = 'Favorites Presets'
         Enabled = False
       end
       object PSlot1: TMenuItem
@@ -240,6 +241,14 @@ object Form1: TForm1
         Caption = 'Add Home icon to nested sub-folders'
         OnClick = MenuItem15Click
       end
+      object MenuItem16: TMenuItem
+        Caption = 'Backup Folders XML file'
+        OnClick = MenuItem16Click
+      end
+      object MenuItem17: TMenuItem
+        Caption = 'Restore a Folders XML file'
+        OnClick = MenuItem17Click
+      end
     end
     object MenuItem2: TMenuItem
       Caption = '&Help'
@@ -255,10 +264,25 @@ object Form1: TForm1
   end
   object PopupMenu1: TPopupMenu
     OnPopup = PopupMenu1Popup
-    left = 264
+    left = 96
+    top = 40
     object RenameHome: TMenuItem
       Caption = 'Rename'
       OnClick = RenameHomeClick
     end
+  end
+  object BackupXMLDlg: TSaveDialog
+    Options = [ofOverwritePrompt, ofNoChangeDir, ofNoNetworkButton, ofEnableSizing, ofDontAddToRecent]
+    left = 176
+    top = 40
+  end
+  object RestoreXMLDlg: TOpenDialog
+    left = 264
+    top = 40
+  end
+  object HakchiConfigDlg: TSelectDirectoryDialog
+    Options = [ofPathMustExist, ofEnableSizing, ofViewDetail]
+    left = 33
+    top = 115
   end
 end
