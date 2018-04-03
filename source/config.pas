@@ -28,8 +28,8 @@ uses
   Classes, SysUtils, Inifiles, CheckLst, EditBtn, DateUtils, StdCtrls, Menus,
   futils;
 
-function SaveConfig(XMLEdit:String; GamesEdit:String; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; HomeName:String; CheckListBox:TCheckListBox):Boolean;
-function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBox:TCheckListBox; var ViewStyle:Integer; var ViewSelected:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
+function SaveConfig(XMLEdit:String; GamesEdit:String; NANDChecked:Boolean; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; HomeName:String; CheckListBox:TCheckListBox):Boolean;
+function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBox:TCheckListBox; var NANDCheckBox:TCheckBox; var ViewStyle:Integer; var ViewSelected:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
 function SaveSlot(Slot: Integer; CheckListBox:TCheckListBox; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
 function LoadSlot(Slot: Integer; CheckListBox:TCheckListBox; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
 function GetSavedChecked(Slot: Integer):String;
@@ -121,7 +121,7 @@ begin
   SaveSlot := True;
 end;
 
-function SaveConfig(XMLEdit:String; GamesEdit:String; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; HomeName:String; CheckListBox:TCheckListBox):Boolean;
+function SaveConfig(XMLEdit:String; GamesEdit:String; NANDChecked: Boolean; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; HomeName:String; CheckListBox:TCheckListBox):Boolean;
 var
   Ini: TIniFile;
   AppPath,CheckedGames: String;
@@ -133,6 +133,7 @@ begin
     CheckedGames := '';
     Ini.WriteString('config','XMLFile',XMLEdit);
     Ini.WriteString('config','gamesfolder',GamesEdit);
+    Ini.WriteBool('config','nand',NANDChecked);
     Ini.WriteString('config','lastfav',LastFavFolder);
     Ini.WriteInteger('config','view',ViewStyle);
     Ini.WriteBool('config','viewselect',ViewSelected);
@@ -149,7 +150,7 @@ begin
   SaveConfig := True;
 end;
 
-function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBox:TCheckListBox; var ViewStyle:Integer; var ViewSelected:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
+function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; CheckListBox:TCheckListBox; var NANDCheckBox:TCheckBox; var ViewStyle:Integer; var ViewSelected:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
 var
   Ini: TIniFile;
   ChkStringList: TStringList;
@@ -168,6 +169,11 @@ begin
     ViewStyle := Ini.ReadInteger('config','view',1);
     ViewSelected := Ini.ReadBool('config','viewselect',False);
     HomeName := Ini.ReadString('config','home','HOME');
+    NANDCheckBox.Checked := Ini.ReadBool('config','nand',False);
+    if (NANDCheckBox.Checked) then
+      GamesEdit.Enabled:=False
+    else
+      GamesEdit.Enabled:=True;
     if (FileExists(XMLEdit.Caption)) then LoadGamesList(CheckListBox,XMLEdit.Caption,ViewStyle,ViewSelected,HomeName,CheckedGames);
     ChkStringList.Clear;
     ChkStringList.Delimiter := ',';

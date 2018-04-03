@@ -112,7 +112,7 @@ object Form1: TForm1
   object LoadBtn: TButton
     Left = 368
     Height = 25
-    Top = 144
+    Top = 168
     Width = 75
     Caption = '&Load'
     OnClick = LoadBtnClick
@@ -133,6 +133,15 @@ object Form1: TForm1
         Width = 198
       end>
     SimplePanel = False
+  end
+  object NANDCheckBox: TCheckBox
+    Left = 309
+    Height = 19
+    Top = 136
+    Width = 157
+    Caption = 'Use NAND on the console'
+    OnChange = NANDCheckBoxChange
+    TabOrder = 7
   end
   object MainMenu1: TMainMenu
     left = 24

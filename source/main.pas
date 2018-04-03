@@ -28,13 +28,14 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
   ComCtrls, Types, StdCtrls, lcltype, lclintf, ExtCtrls, CheckLst, EditBtn,
-  MouseAndKeyInput, ui_utils, futils, config, help, about, tools;
+  MouseAndKeyInput, ui_utils, futils, nutils, config, help, about, tools;
 
 type
 
   { TForm1 }
 
   TForm1 = class(TForm)
+    NANDCheckBox: TCheckBox;
     LoadBtn: TButton;
     GamesEdit: TDirectoryEdit;
     Label3: TLabel;
@@ -106,6 +107,7 @@ type
     procedure MenuItem4Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
     procedure MenuItem6Click(Sender: TObject);
+    procedure NANDCheckBoxChange(Sender: TObject);
     procedure ParentChildOptionClick(Sender: TObject);
     procedure ParentOptionClick(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
@@ -159,7 +161,7 @@ begin
   progressBar.Visible:=False;
   LastFavFolder := '';
   HomeName := 'HOME';
-  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
   LoadSlot(1,CheckListBox1,PSlot1,True);
   LoadSlot(2,CheckListBox1,PSlot2,True);
   LoadSlot(3,CheckListBox1,PSlot3,True);
@@ -216,17 +218,17 @@ begin
   if ViewSelected then
     begin
       ViewSelected := False;
-      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+      SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
     end
   else
-    SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+    SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
   LoadSlot(1,CheckListBox1,PSlot1);
   if oViewSelected then
     begin
       ViewSelected := oViewSelected;
-      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+      SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
     end;
   GetCheckCount(CheckListBox1,StatusPanel0,True);
 end;
@@ -242,17 +244,17 @@ begin
   if ViewSelected then
     begin
       ViewSelected := False;
-      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+      SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
     end
   else
-    SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+    SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
   LoadSlot(2,CheckListBox1,PSlot2);
   if oViewSelected then
     begin
       ViewSelected := oViewSelected;
-      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+      SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
     end;
   GetCheckCount(CheckListBox1,StatusPanel0,True);
 end;
@@ -268,17 +270,17 @@ begin
   if ViewSelected then
     begin
       ViewSelected := False;
-      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+      SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
     end
   else
-    SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+    SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
   LoadSlot(3,CheckListBox1,PSlot3);
   if oViewSelected then
     begin
       ViewSelected := oViewSelected;
-      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+      SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
     end;
   GetCheckCount(CheckListBox1,StatusPanel0,True);
 end;
@@ -328,46 +330,78 @@ begin
   AboutForm.ShowModal;
 end;
 
+procedure TForm1.NANDCheckBoxChange(Sender: TObject);
+begin
+  if (NANDCheckBox.Checked) then
+    GamesEdit.Enabled := False
+  else
+    GamesEdit.Enabled := True;
+end;
+
 procedure TForm1.SaveBtnClick(Sender: TObject);
 var
-  fname: string;
+  fname,LastFolder,NandPath: string;
   Res: Boolean;
-  LastFolder: String;
 begin
-  fname := GamesEdit.Caption;
-  fname := fname + '\';
-  if (fname = '') or (not DirectoryExists(fname)) then
-    begin
-      ShowMessage('Error: Supplied games folder path does not exist.');
-      exit;
-    end;
   if (LastUsedXML <> XMLEdit.Caption) then
     begin
       ShowMessage('Warning: New XML filename entered, please click load button first.');
       exit;
     end;
-  if (LastFavFolder <> '') then
+  if (NANDCheckBox.Checked) then
     begin
-      if (not FileExists(fname+LastFavFolder+'\.fav')) then
-        LastFavFolder := '';
-    end;
-  if (LastFavFolder = '') then
-    begin
-      LastFolder := GetLastFolderNumber(fname);
-      if (FileExists(fname+LastFolder+'\.fav')) then
+      NandPath := CloverShellPath;
+      if (NandPath = '') then
+        begin
+          ShowMessage('Error Detecting SNES-Mini.  Please make sure it is plugged in and try again.');
+          exit;
+        end;
+      if (LastFavFolder <> '') then
+        begin
+          if (not CloverFileExists(fname+LastFavFolder+'\.fav')) then
+            LastFavFolder := '';
+        end;
+      LastFolder := NANDGetLastFolderNumber;
+      NandPath := '/var/lib/hakchi/games/snes-'+NandPath+'/';
+      if (CloverFileExists(NandPath+'.fav')) then
         LastFavFolder := LastFolder
       else
-        LastFavFolder := GenerateFolderName(GetLastFolderNumber(fname));
+        LastFavFolder := GenerateFolderName(LastFolder);
+      statusPanel0.Text:='';
+      Res := NANDCreateFaveLinks(CheckListBox1,ProgressBar,StatusBar1,LastFavFolder);
+    end
+  else
+    begin
+      fname := GamesEdit.Caption;
+      fname := fname + '\';
+      if (fname = '') or (not DirectoryExists(fname)) then
+        begin
+          ShowMessage('Error: Supplied games folder path does not exist.');
+          exit;
+        end;
+      if (LastFavFolder <> '') then
+        begin
+          if (not FileExists(fname+LastFavFolder+'\.fav')) then
+            LastFavFolder := '';
+        end;
+      if (LastFavFolder = '') then
+        begin
+          LastFolder := GetLastFolderNumber(fname);
+          if (FileExists(fname+LastFolder+'\.fav')) then
+            LastFavFolder := LastFolder
+          else
+            LastFavFolder := GenerateFolderName(GetLastFolderNumber(fname));
+        end;
+      statusPanel0.Text:='';
+      Res := CreateFaveLinks(fname,CheckListBox1,ProgressBar,StatusBar1,LastFavFolder);
     end;
-  statusPanel0.Text:='';
-  Res := CreateFaveLinks(fname,CheckListBox1,ProgressBar,StatusBar1,LastFavFolder);
   if (MessageDlg('Save','Completed.',mtInformation,[mbOk],0) = mrOk) then
     begin
       ProgressBar.Position:=0;
       ProgressBar.Visible:= False;
       statusPanel1.Text:='';
       GetCheckCount(CheckListBox1, StatusBar1.Panels.Items[0], True);
-      SaveConfig(XMLEdit.Caption,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+      SaveConfig(XMLEdit.Caption,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
     end;
 end;
 
@@ -409,8 +443,8 @@ begin
   if (ViewSelected) then ViewSelected := False
   else ViewSelected := True;
   SelectedOption.Checked := ViewSelected;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
 end;
 
 procedure TForm1.SlotName1Click(Sender: TObject);
@@ -468,8 +502,8 @@ begin
     end
   else if ViewSelected then
     begin
-      SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+      SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+      LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
     end;
   if (checked = 1) then
     StatusPanel0.text := ' 1 game selected.'
@@ -496,8 +530,8 @@ begin
   FlatOption.Checked:=True;
   ParentOption.Checked:=False;
   ParentChildOption.Checked:=False;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
 end;
 
 procedure TForm1.ParentOptionClick(Sender: TObject);
@@ -506,8 +540,8 @@ begin
   FlatOption.Checked:=False;
   ParentOption.Checked:=True;
   ParentChildOption.Checked:=False;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
 end;
 
 procedure TForm1.PopupMenu1Popup(Sender: TObject);
@@ -526,8 +560,8 @@ begin
   if (NewName = '') then exit;
   if (Length(NewName) > 15) then NewName := Copy(NewName,1,15);
   HomeName := NewName;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
 end;
 
 procedure TForm1.ParentChildOptionClick(Sender: TObject);
@@ -536,13 +570,13 @@ begin
   FlatOption.Checked:=False;
   ParentOption.Checked:=False;
   ParentChildOption.Checked:=True;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
-  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,ViewStyle,ViewSelected,LastFavFolder,HomeName);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+  LoadConfig(XMLEdit,GamesEdit,CheckListBox1,NANDCheckBox,ViewStyle,ViewSelected,LastFavFolder,HomeName);
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
-  SaveConfig(LastUsedXML,GamesEdit.Caption,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,HomeName,CheckListBox1);
 end;
 
 end.
