@@ -25,7 +25,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, lazmouseandkeyinput, main, futils, ui_utils, config, help, tools,
-  about, nutils;
+  about, nutils, popupex;
 
 {$R *.res}
 

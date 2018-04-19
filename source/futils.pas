@@ -25,36 +25,290 @@ unit futils;
 interface
 
 uses
-  Classes, SysUtils, RegExpr, CheckLst, Dialogs, FileUtil, ComCtrls;
+  Classes, SysUtils, RegExpr, Dialogs, FileUtil, ComCtrls, Forms,
+  ui_utils;
 
-function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer; ViewSelected:Boolean; HomeName:String; CheckedGames:String):Boolean;
-function GetLastFolderNumber(Path: String):String;
-function GenerateFolderName(Number: String):String;
-function CreateFaveLinks(ConsolePath: String; GamesList: TCheckListBox; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
+function GetLastFolderNumber(Path: String; SubFolder: Boolean = False):String;
+function GenerateFolderName(Number: String; SubFolder: Boolean = False):String;
+function CreateFaveLinks(ConsolePath: String; GamesList: TTreeView; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
 function IsGameChecked(CheckedGames:String; GameCode:String):Boolean;
-function GetCode(Game: String; CheckListBox: TCheckListBox):String;
-
-var
-  GameCodes : Array of String;
+function SaveShortcuts(Tree: TTreeView; Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
+function FindTextInFiles(TxtMatch: String; FileMatch: String; Path: String; var ResList: TStringList):Boolean;
+procedure DeleteShortcuts(Tree: TTreeView; SelectedOnly: Boolean = False);
+procedure TreeToXML(Tree: TTreeView; Filename: String);
 
 implementation
 
-function GetCode(Game: String; CheckListBox: TCheckListBox):String;
+procedure TreeToXML(Tree: TTreeView; Filename: String);
 var
   i: integer;
-  c,g: String;
+  lNode,lNode2: TTreeNode;
+  GData: TGameData;
+  Data: TStringList;
+
+  procedure nProcessNode(Node: TTreeNode);
+  var
+    GData: TGameData;
+    cNode,cNode2: TTreeNode;
+    FName,indent: String;
+    i: integer;
+  begin
+    if (Node = nil) then exit;
+    indent := '';
+    for i := 0 to Node.Level do
+      indent := indent + '  ';
+    GData := TGameData(Node.Data);
+    FName := StringReplace(GData.Name,'&','&amp;',[rfReplaceAll]);
+    if (GData.FType = 'Folder') and (Node <> Tree.Items[0]) then
+      Data.Add(indent+'<Folder name="'+FName+'" icon="'+GData.Icon+'" position="3">');
+
+    if (GData.FType = 'Game') then
+      Data.Add(indent+'<Game code="'+GData.Code+'" name="'+FName+'" />');
+
+    // Goes to the child node
+    cNode := Node.GetFirstChild;
+
+    // Processes all child nodes
+    while cNode <> nil do
+      begin
+        cNode2 := cNode.GetNextSibling;
+        nProcessNode(cNode);
+        cNode := cNode2;
+      end;
+
+    if (GData.FType = 'Folder') and (Node <> Tree.Items[0]) then
+      Data.Add(indent+'</Folder>');
+  end;
+
 begin
-  c := '';
-  for i := 0 to CheckListBox.Count-1 do
+  if (Tree.Items.Count = 0) then exit;
+  Data := TStringList.Create;
+  try
+    Data.Add('<?xml version="1.0" encoding="utf-16"?>');
+    Data.Add('<Tree>');
+    lNode := Tree.Items[0];
+    while (lNode <> nil) do
+      begin
+        lNode2 := lNode.GetNextSibling;
+        nProcessNode(lNode);
+        lNode := lNode2;
+      end;
+    Data.Add('</Tree>');
+    Data.SaveToFile(Filename);
+  finally
+    Data.Free;
+  end;
+end;
+
+procedure DeleteShortcuts(Tree: TTreeView; SelectedOnly: Boolean = False);
+var
+  lNode,lNode2: TTreeNode;
+  GData: TGameData;
+
+  procedure nProcessNode(Node: TTreeNode);
+  var
+    GData: TGameData;
+    nNode,cNode,cNode2: TTreeNode;
+    Res,Process: Boolean;
+  begin
+    if (Node = nil) then exit;
+    Process := False;
+    GData := TGameData(Node.Data);
+
+    if (GData.FType = 'Shortcut') and (not SelectedOnly) then
+      Process := True;
+    if (GData.FType = 'Shortcut') and (SelectedOnly) and (NodeChecked(Node)) then
+      Process := True;
+
+    if Process then
+      begin
+        if DirectoryExists(GData.FilePath) then
+          begin
+            Res := DeleteDirectory(GData.FilePath,True);
+            if Res then Res := RemoveDir(GData.FilePath)
+          end;
+        cNode := Node.GetFirstChild;
+        Tree.Items.Delete(Node);
+      end
+    else
+      cNode := Node.GetFirstChild;
+
+    // Processes all child nodes
+    while cNode <> nil do
+      begin
+        cNode2 := cNode.GetNextSibling;
+        nProcessNode(cNode);
+        cNode := cNode2;
+      end;
+  end;
+
+begin
+  if (Tree.Items.Count = 0) then exit;
+  lNode := Tree.Items[0];
+  while (lNode <> nil) do
     begin
-      g := CheckListBox.Items[i];
-      if (g = Game) then
-        begin
-          c := GameCodes[i];
-          break;
-        end;
+      lNode2 := lNode.GetNextSibling;
+      nProcessNode(lNode);
+      lNode := lNode2;
     end;
-  GetCode := c;
+end;
+
+function FindTextInFiles(TxtMatch: String; FileMatch: String; Path: String; var ResList: TStringList):Boolean;
+var
+  FList,FData: TStringList;
+  i: integer;
+begin
+  FindTextInFiles := False;
+  FList := TStringList.Create;
+  try
+    FindAllFiles(FList,Path,FileMatch,True,faDirectory);
+    for i := 0 to FList.Count-1 do
+      begin
+        Application.ProcessMessages;
+        FData := TStringList.Create;
+        FData.LineBreak:=#10;
+        try
+          FData.LoadFromFile(FList[i]);
+          if (Pos(TxtMatch,FData.Text) <> 0) then
+            begin
+              FindTextInFiles := True;
+              ResList.Add(FList[i]);
+            end;
+        finally
+          FData.Free;
+        end;
+      end;
+  finally
+    FList.Free;
+  end;
+end;
+
+function SaveShortcuts(Tree: TTreeView; Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
+var
+  lNode,lNode2: TTreeNode;
+  StatusPanel: TStatusPanel;
+
+  procedure nProcessNode(Node: TTreeNode);
+  var
+    GData,FData: TGameData;
+    pNode,cNode,cNode2: TTreeNode;
+    TmList,TmList2,sList,EmptyFile: TStringList;
+    h,a: integer;
+    nPath,sPath,Suffix: String;
+    err: Boolean;
+  begin
+    if (Node = nil) then exit;
+  // find all games in the tree
+    GData := TGameData(Node.Data);
+    if (GData.FType = 'Game') and (NodeChecked(Node)) then
+      begin
+        pNode := Node;
+        sList := TStringList.Create;
+        try
+      // get the source path
+          sPath := '';
+          FindAllFiles(sList,Path,GData.Code+'.desktop',True,faDirectory);
+          if (sList <> nil) and (sList.Count > 0) then
+            begin
+              sPath := ExtractFilePath(sList[0]);
+            end;
+        finally
+          sList.Free;
+        end;
+        TmList := TStringList.Create;
+        try
+      // create a list of folder name's that lead to path of the game
+          while (Assigned(pNode.Parent)) do
+            begin
+              pNode := pNode.Parent;
+              FData := TGameData(pNode.Data);
+              if (FData.FType = 'Folder') and (FData.Code = 'HOME') then
+                TmList.Insert(0,'---HOME---')
+              else
+                TmList.Insert(0,pNode.Text);
+            end;
+      // parse the list to find the actual file path that will be used to save shortcut
+          if (TmList <> nil) and (TmList.Count > 0) then
+            begin
+              nPath := Path;
+              Suffix := '';
+              err := False;
+              for h := 0 to TmList.Count-1 do
+                begin
+                  TmList2 := TStringList.Create;
+                  try
+                    if (TmList[h] = '---HOME---') then
+                      begin
+                        Suffix := '000';
+                        nPath := Path+'\'+Suffix;
+                      end
+                    else
+                      begin
+                        if (not FindTextInFiles('Name='+TmList[h]+#10,'*.desktop',nPath,TmList2)) then
+                          err := True;
+                        if (TmList2 <> nil) and (TmList2.Count > 0) then
+                          begin
+                            a := Pos('CLV-S-00',TmList2[0])+8;
+                            Suffix := Copy(TmList2[0],a,3);
+                            nPath := Path+'\'+Suffix;
+                          end;
+                      end;
+                  finally
+                    TmList2.Free;
+                  end;
+                  if err then break;
+                end;
+              if (not DirectoryExists(nPath+'\'+GData.Code)) then
+                begin
+                  CreateDir(nPath+'\'+GData.Code);
+                  Copyfile(sPath+GData.Code+'.desktop',nPath+'\'+GData.Code+'\'+GData.Code+'.desktop');
+                  EmptyFile := TStringList.Create;
+                  try
+                    EmptyFile.LineBreak := #10;
+                    EmptyFile.Add('');
+                    EmptyFile.SaveToFile(nPath+'\'+GData.Code+'\'+'.sht');
+                  finally
+                    EmptyFile.Free;
+                  end;
+                end;
+            end;
+        finally
+          TmList.Free;
+        end;
+        ProgressBar.Position:=ProgressBar.Position+1;
+        StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
+        StatusBar.Update;
+      end;
+
+    // Goes to the child node
+    cNode := Node.GetFirstChild;
+
+    // Processes all child nodes
+    while cNode <> nil do
+      begin
+        cNode2 := cNode.GetNextSibling;
+        nProcessNode(cNode);
+        cNode := cNode2;
+      end;
+  end;
+
+begin
+  SaveShortcuts := False;
+  if (Tree.Items.Count = 0) then exit;
+
+  ProgressBar.Visible := True;
+  StatusPanel := StatusBar.Panels.Items[1];
+  ProgressBar.Max := GameCount(Tree);
+  ProgressBar.Position:=0;
+
+  lNode := Tree.Items[0];
+  while (lNode <> nil) do
+    begin
+      lNode2 := lNode.GetNextSibling;
+      nProcessNode(lNode);
+      lNode := lNode2;
+    end;
+  SaveShortcuts := True;
 end;
 
 function IsGameChecked(CheckedGames:String; GameCode:String):Boolean;
@@ -87,101 +341,16 @@ begin
   IsGameChecked := Res;
 end;
 
-function LoadGamesList(CheckListBox: TCheckListBox; Filename: String; ViewStyle:Integer; ViewSelected:Boolean; HomeName:String; CheckedGames:String):Boolean;
-var
-  FStringList: TStringList;
-  i,j: integer;
-  s,t,u: String;
-  fh,isChecked: Boolean;
-  RegexObj: TRegExpr;
-begin
-  fh := False;
-  if not FileExists(Filename) then
-    begin
-      LoadGamesList := False;
-      exit;
-    end;
-
-  CheckListBox.Clear;
-  FStringList := TStringList.Create;
-  j := 0;
-
-  try
-    FStringList.LoadFromFile(Filename);
-    for i:=0 to FStringList.Count-1 do
-      begin
-        s := StringReplace(FStringList[i],'&amp;','&',[rfReplaceAll, rfIgnoreCase]);
-        if (Pos('  <Folder',s) > 0) and (ViewStyle > 0) then // and (Pos('folder_',FStringList[i]) <= 0) then
-          begin
-            RegExObj := TRegExpr.Create('^  <Folder name=\"(.*?)\" icon');
-            if RegExObj.Exec(s) then
-              begin
-                CheckListBox.Items.Add('-'+RegExObj.Match[1]);
-                inc(j);
-                SetLength(GameCodes,j);
-                GameCodes[j-1] := '000';
-              end
-            else if (ViewStyle = 2) then
-              begin
-                RegExObj.Free;
-                RegExObj := TRegExpr.Create('<Folder name=\"(.*?)\" icon');
-                if RegExObj.Exec(s) then
-                  begin
-                    u := '    <';
-                    t := '';
-                    while (Pos(u,s) > 0) do
-                      begin
-                        t := t+'=';
-                        u := '  '+u;
-                      end;
-                    CheckListBox.Items.Add(t+RegExObj.Match[1]);
-                    inc(j);
-                    SetLength(GameCodes,j);
-                    GameCodes[j-1] := '000';
-                  end;
-              end;
-            RegExObj.Free;
-          end
-        else if (Pos('Game code',s) > 0) then
-          begin
-            if (Pos('  <Game',s) = 1) and (ViewStyle > 0) and (not fh) then
-              begin
-                CheckListBox.Items.Add('-'+HomeName);
-                inc(j);
-                SetLength(GameCodes,j);
-                GameCodes[j-1] := 'HOME';
-                fh := True;
-              end;
-            RegExObj := TRegExpr.Create('Game code="(.*?)" name="(.*?)"');
-            if RegExObj.Exec(s) then
-              begin
-                isChecked := IsGameChecked(CheckedGames, RegExObj.Match[1]);
-                if (not ViewSelected) OR (ViewSelected AND IsChecked) then
-                  begin
-                    CheckListBox.Items.Add(RegExObj.Match[2]);
-                    inc(j);
-                    SetLength(GameCodes,j);
-                    GameCodes[j-1] := RegExObj.Match[1];
-                    CheckListBox.Checked[j-1] := IsChecked;
-                  end;
-              end;
-            RegExObj.Free;
-          end;
-      end;
-  finally
-    if Assigned(FStringList) then
-      FreeAndNil(FStringList);
-  end;
-  LoadGamesList := True;
-end;
-
-function GetLastFolderNumber(Path: String):String;
+function GetLastFolderNumber(Path: String; SubFolder: Boolean = False):String;
 var
   FD: TSearchRec;
   SL: TStringList;
+  patt: String;
 begin
   GetLastFolderNumber := '';
-  If (FindFirst(Path+'*',faDirectory,FD)=0) then
+  if (SubFolder) then patt := 'CLV-S-*'
+  else patt := '*';
+  if (FindFirst(Path+patt,faDirectory,FD)=0) then
     begin
       SL := TStringList.Create;
       try
@@ -190,30 +359,37 @@ begin
         until (FindNext(FD) <> 0);
         SL.Sort;
         GetLastFolderNumber := SL[SL.Count-1];
+        if (SubFolder) then
+          begin
+            GetLastFolderNumber := Copy(GetLastFolderNumber,7,5);
+          end;
       finally
         SL.Free;
       end;
     end;
 end;
 
-function GenerateFolderName(Number: String):String;
+function GenerateFolderName(Number: String; SubFolder: Boolean = False):String;
 var
   num: integer;
 begin
   if not TryStrToInt(Number,num) then
     begin
-      ShowMessage('Error: String not a valid number.');
+      ShowMessage('Error: String ('+Number+') not a valid number.');
       exit;
     end;
   num := num+1;
-  GenerateFolderName := Format('%.3d',[num]);
+  if (not SubFolder) then
+    GenerateFolderName := Format('%.3d',[num])
+  else
+    GenerateFolderName := 'CLV-S-'+Format('%.5d',[num]);
 end;
 
-function CreateFaveLinks(ConsolePath: String; GamesList: TCheckListBox; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
+function CreateFaveLinks(ConsolePath: String; GamesList: TTreeView; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
 var
-  DeskFile,EmptyFile,FindLink: TStringList;
+  GL,DeskFile,EmptyFile,FindLink: TStringList;
   StatusPanel: TStatusPanel;
-  FPath,g,t: String;
+  FPath,t: String;
   j: Integer;
   Res: Boolean;
 begin
@@ -225,8 +401,13 @@ begin
   DeskFile.LineBreak := #10; // Hakchi kernel will give c8 errors for Dos LineFeeds
 
   StatusPanel := StatusBar.Panels.Items[1];
-  ProgressBar.Max := GamesList.Count+3;
-  ProgressBar.Position:=0;
+  try
+    GL := TStringList.Create;
+    GetCheckedCodes(GamesList,GL);
+    ProgressBar.Max := GL.Count+3;
+    ProgressBar.Position:=0;
+  finally
+  end;
   StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
   StatusBar.Update;
   if (DirectoryExists(ConsolePath+FolderSuff)) then
@@ -305,31 +486,25 @@ begin
   StatusBar.Update;
 
   try
-    for j := 0 to GamesList.Count-1 do
+    for j := 0 to GL.Count-1 do
       begin
-        g := GamesList.Items[j];
-        if (g[1] <> '-') and (g[1] <> '=') and (GamesList.Checked[j]) then
-          begin
-            if (Length(GameCodes[j]) > 0) then
-              begin
-                try
-                  FindLink := TStringList.Create;
-                  FindAllFiles(FindLink,ConsolePath,GameCodes[j]+'.desktop',True);
-                  if (FindLink.Count > 0) then
-                    begin
-                      CreateDir(ConsolePath+FolderSuff+'\'+GameCodes[j]);
-                      CopyFile(FindLink[0],ConsolePath+FolderSuff+'\'+GameCodes[j]+'\'+GameCodes[j]+'.desktop');
-                    end;
-                finally
-                  FindLink.Free;
-                end;
-              end;
-          end;
+        try
+          FindLink := TStringList.Create;
+          FindAllFiles(FindLink,ConsolePath,GL[j]+'.desktop',True);
+          if (FindLink.Count > 0) then
+            begin
+              CreateDir(ConsolePath+FolderSuff+'\'+GL[j]);
+              CopyFile(FindLink[0],ConsolePath+FolderSuff+'\'+GL[j]+'\'+GL[j]+'.desktop');
+            end;
+        finally
+          FindLink.Free;
+        end;
         ProgressBar.Position:=ProgressBar.Position+1;
         StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
         StatusBar.Update;
       end;
   finally
+    GL.Free;
     DeskFile.Free;
     EmptyFile.Free;
   end;

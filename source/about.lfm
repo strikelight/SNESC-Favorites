@@ -887,9 +887,10 @@ object AboutForm: TAboutForm
   end
   object StaticText1: TStaticText
     Left = 64
-    Height = 17
+    Height = 16
     Top = 112
-    Width = 288
+    Width = 38
+    AutoSize = True
     Caption = 'GitHub'
     Color = clDefault
     Font.Color = clNavy

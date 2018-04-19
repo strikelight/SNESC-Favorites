@@ -24,13 +24,215 @@ unit tools;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, IniFiles, Dialogs, ComCtrls, Controls;
+  Classes, SysUtils, FileUtil, IniFiles, Dialogs, ComCtrls, Controls, Graphics,
+  FPImage, FPCanvas, FPImgCanv, FPReadJPEG, FPWriteJPEG, FPReadPNG, FPWritePNG, FPReadBMP,
+  RegExpr, ui_utils;
 
 function AddHomeIcons(Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
 function BackupXML (Filename: String; Dialog: TSaveDialog):Boolean;
 function RestoreXML (Filename: String; rDialog: TOpenDialog; hDialog: TSelectDirectoryDialog):Boolean;
+function TColorToHex(Color: TColor):String;
+function ResizeImage(const InFile, OutFile: string; const maxWidth, maxHeight: word): boolean;
+type TImgType = (itJPEG, itGIF, itPNG, itBMP);
+function AddGamePrefixes(Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar; Undo: Boolean = False):Boolean;
 
 implementation
+
+function TColorToHex(Color: TColor):String;
+begin
+  Result := '#'+IntToHex(Red(Color),2)+IntToHex(Green(Color),2)+IntToHex(Blue(Color),2);
+end;
+
+function ResizeImage(const InFile, OutFile: string; const maxWidth, maxHeight: word): boolean;
+type TImgType = (itJPEG, itGIF, itPNG, itBMP);
+var
+  ext: string;
+  it: TImgType;
+  AWidth, AHeight: word;
+  Image, DestImage: TFPMemoryImage;
+  Canvas: TFPImageCanvas;
+  Reader: TFPCustomImageReader;
+  Writer: TFPCustomImageWriter;
+  StartTime: DWord;
+begin
+  result := false;
+  ext := LowerCase(ExtractFileExt(InFile));
+  if (ext = '.jpg') or (ext = '.jpeg') then it := itJPEG
+  else if (ext = '.png') then it := itPNG
+  else if (ext = '.bmp') then it := itBMP
+  else Exit;
+  AWidth := maxWidth;
+  AHeight := maxHeight;
+  Image := TFPMemoryImage.Create(0, 0);
+  try
+    case it of
+    itJPEG: Reader := TFPReaderJPEG.Create;
+    itPNG: Reader := TFPReaderPNG.Create;
+    itBMP: Reader := TFPReaderBMP.Create;
+    end;
+    try
+      case it of
+      itJPEG: begin
+                TFPReaderJPEG(Reader).Performance := jpBestQuality;//jpBestSpeed;
+                TFPReaderJPEG(Reader).MinHeight := AHeight;
+                TFPReaderJPEG(Reader).MinWidth := AWidth;
+              end;
+      end;
+      Image.LoadFromFile(InFile, Reader);
+    finally
+      Reader.Free;
+    end;
+    if AWidth = 0 then AWidth := Image.Width;
+    if AHeight = 0 then AHeight := Image.Height;
+    // Scale image whilst preserving aspect ratio
+ {   if (Image.Width / Image.Height) > (AWidth / AHeight) then
+      AHeight := Round(AWidth / (Image.Width / Image.Height))
+    else if (Image.Width / Image.Height) < (AWidth / AHeight) then
+      AWidth := Round(AHeight * (Image.Width / Image.Height));  }
+    DestImage := TFPMemoryImage.Create(AWidth, AHeight);
+    try
+      Canvas := TFPImageCanvas.Create(DestImage);
+      try
+        Canvas.StretchDraw(0, 0, AWidth, AHeight, Image);
+      finally
+        Canvas.Free;
+      end;
+      case it of
+      itJPEG: Writer := TFPWriterJPEG.Create;
+      itPNG: Writer := TFPWriterPNG.Create;
+      itBMP: Writer := TFPWriterJPEG.Create;
+      end;
+      try
+        case it of
+        itJPEG, itBMP: begin
+                  TFPWriterJPEG(Writer).CompressionQuality := 95;
+                  TFPWriterJPEG(Writer).ProgressiveEncoding := true;
+                end;
+        itPNG: begin
+                 TFPWriterPNG(Writer).UseAlpha := true;
+               end;
+        end;
+        DestImage.SaveToFile(OutFile, Writer);
+        result := true;
+      finally
+        Writer.Free;
+      end;
+    finally
+      DestImage.Free;
+    end;
+  finally
+    Image.free;
+  end;
+end;
+
+function AddGamePrefixes(Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar; Undo: Boolean = False):Boolean;
+var
+  FPath,ccmd,prefix: String;
+  Ini: TIniFile;
+  FList,SL,FData: TStringList;
+  StatusPanel: TStatusPanel;
+  k: integer;
+  re1: TRegExpr;
+
+  function CMDToPrefix(cmd:String):String;
+  var
+    i,j: integer;
+    match: String;
+    SS: TStringList;
+  begin
+    match := '';
+    cmd := LowerCase(cmd);
+    for i := 0 to SL.Count-1 do
+      begin
+        SS := TStringList.Create;
+        try
+          SS.CommaText:=Lowercase(SL.ValueFromIndex[i]);
+          for j := 0 to SS.Count-1 do
+            begin
+              if (Pos(SS[j],cmd) > 0) then
+                begin
+                  match := SL.Names[i];
+                  break;
+                end;
+            end;
+        finally
+          SS.Free;
+        end;
+        if (match <> '') then break;
+      end;
+    CMDToPrefix := match;
+  end;
+
+begin
+  FPath := ExtractFilePath(ParamStr(0));
+  if (not DirectoryExists(Path)) or (not FileExists(FPath+'prefixes.ini')) then exit;
+  ProgressBar.Visible:=True;
+  StatusPanel := StatusBar.Panels.Items[1];
+  Path := Path + '\';
+
+  SL := TStringList.Create;
+  try
+    Ini := TIniFile.Create(FPath+'prefixes.ini');
+    try
+      Ini.ReadSectionValues('prefix',SL);
+    finally
+      Ini.Free;
+    end;
+    FList := TStringList.Create;
+    try
+      FindAllFiles(FList,Path+'\','*.desktop',True,faDirectory);
+      ProgressBar.Max := FList.Count;
+      if ProgressBar.Max = 0 then ProgressBar.Max := 1;
+      ProgressBar.Position:=0;
+      StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
+      StatusBar.Update;
+
+      for k := 0 to FList.Count-1 do
+        begin
+          FData := TStringList.Create;
+          re1 := TRegExpr.Create('Exec=/bin/(.[^ ]*)');
+          try
+            FData.LoadFromFile(FList[k]);
+//            debuglog('AG1 '+Flist[k]);
+            if re1.Exec(FData.Text) then
+              begin
+                ccmd := re1.Match[1];
+                prefix := CMDToPrefix(ccmd);
+//                debuglog('AG: '+FList[k]+' '+ccmd+' '+prefix);
+                if (prefix <> '') then
+                  begin
+                    re1.Expression := 'Name=(.[^'+#10+']*)';
+                    if re1.Exec(FData.Text) then
+                      begin
+                       if (Undo) and (Pos(prefix+': ',re1.Match[1]) = 1) then
+                         begin
+                           FData.Text := StringReplace(FData.Text,'Name='+prefix+': ','Name=',[rfReplaceAll]);
+                           FData.SaveToFile(FList[k]);
+                         end
+                       else if (Pos(prefix+': ',re1.Match[1]) <> 1) then
+                         begin
+                           FData.Text := StringReplace(FData.Text,'Name=','Name='+prefix+': ',[rfReplaceAll]);
+                           FData.SaveToFile(FList[k]);
+                         end;
+                      end;
+                  end;
+              end;
+          finally
+            re1.Free;
+            FData.Free;
+          end;
+          ProgressBar.Position:=ProgressBar.Position+1;
+          StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
+          StatusBar.Update;
+        end;
+    finally
+      FList.Free;
+    end;
+  finally
+    SL.Free;
+  end;
+  AddGamePrefixes := True;
+end;
 
 function AddHomeIcons(Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
 var

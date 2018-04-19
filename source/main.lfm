@@ -1,54 +1,41 @@
 object Form1: TForm1
-  Left = 261
+  Left = 371
   Height = 557
-  Top = 117
+  Top = 78
   Width = 548
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'SNESC Favorites'
+  Caption = 'SNESC Favorites - TView'
   ClientHeight = 537
   ClientWidth = 548
   Menu = MainMenu1
   OnClose = FormClose
   OnCreate = FormCreate
-  OnDestroy = FormDestroy
+  OnMouseUp = FormMouseUp
   Position = poScreenCenter
   LCLVersion = '1.8.2.0'
-  object CheckListBox1: TCheckListBox
-    Left = 16
-    Height = 433
-    Top = 32
-    Width = 272
-    ItemHeight = 0
-    OnDrawItem = CheckListBox1DrawItem
-    OnItemClick = CheckListBox1ItemClick
-    OnMouseDown = CheckListBox1MouseDown
-    PopupMenu = PopupMenu1
-    Style = lbOwnerDrawFixed
-    TabOrder = 0
-  end
   object SaveBtn: TButton
     Left = 16
     Height = 38
     Top = 471
-    Width = 113
-    Caption = '&Save'
+    Width = 130
+    Caption = '&Save Favorites'
     OnClick = SaveBtnClick
-    TabOrder = 1
+    TabOrder = 0
   end
   object ClearBtn: TButton
-    Left = 175
+    Left = 158
     Height = 38
     Top = 471
-    Width = 113
-    Caption = '&Clear'
+    Width = 130
+    Caption = '&Clear Favorites'
     OnClick = ClearBtnClick
-    TabOrder = 2
+    TabOrder = 1
   end
   object Label1: TLabel
     Left = 16
     Height = 15
-    Top = 7
+    Top = 11
     Width = 183
     Caption = 'Select games to add to favorites:'
     Font.Style = [fsBold]
@@ -81,7 +68,7 @@ object Form1: TForm1
     MaxLength = 0
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 3
+    TabOrder = 2
   end
   object GamesEdit: TDirectoryEdit
     Left = 309
@@ -97,7 +84,7 @@ object Form1: TForm1
     MaxLength = 0
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 4
+    TabOrder = 3
   end
   object Label3: TLabel
     Left = 309
@@ -112,11 +99,11 @@ object Form1: TForm1
   object LoadBtn: TButton
     Left = 368
     Height = 25
-    Top = 168
+    Top = 162
     Width = 75
     Caption = '&Load'
     OnClick = LoadBtnClick
-    TabOrder = 5
+    TabOrder = 4
   end
   object StatusBar1: TStatusBar
     Left = 0
@@ -140,8 +127,112 @@ object Form1: TForm1
     Top = 136
     Width = 157
     Caption = 'Use NAND on the console'
+    Enabled = False
     OnChange = NANDCheckBoxChange
+    TabOrder = 6
+  end
+  object TreeView1: TTreeView
+    Left = 338
+    Height = 241
+    Top = 224
+    Width = 195
+    ExpandSignColor = clHighlight
+    ExpandSignType = tvestArrowFill
+    HideSelection = False
+    PopupMenu = PopupMenu1
+    ReadOnly = True
+    SelectionColor = clSilver
+    SelectionFontColor = clNavy
+    SelectionFontColorUsed = True
+    ShowLines = False
+    SortType = stBoth
     TabOrder = 7
+    OnCompare = TreeView1Compare
+    OnCustomDrawItem = TreeView1CustomDrawItem
+    OnDeletion = TreeView1Deletion
+    OnMouseDown = TreeView1MouseDown
+    Options = [tvoAutoItemHeight, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowRoot, tvoToolTips]
+    TreeLinePenStyle = psClear
+  end
+  object ClearShcBtn: TButton
+    Left = 441
+    Height = 38
+    Top = 471
+    Width = 95
+    Caption = 'Cl&ear Shortcuts'
+    OnClick = ClearShcBtnClick
+    TabOrder = 8
+  end
+  object AddShortCutsBtn: TButton
+    Left = 302
+    Height = 22
+    Top = 328
+    Width = 22
+    Caption = '>>'
+    Font.Style = [fsBold]
+    OnClick = AddShortCutsBtnClick
+    ParentFont = False
+    TabOrder = 9
+  end
+  object Label4: TLabel
+    Left = 360
+    Height = 15
+    Top = 207
+    Width = 133
+    Caption = 'Create Game Shortcuts:'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object Bevel1: TBevel
+    Left = 302
+    Height = 3
+    Top = 199
+    Width = 234
+  end
+  object TreeView2: TTreeView
+    Left = 16
+    Height = 433
+    Top = 32
+    Width = 272
+    BorderSpacing.CellAlignVertical = ccaCenter
+    DefaultItemHeight = 18
+    ExpandSignColor = clHighlight
+    ExpandSignType = tvestArrowFill
+    HideSelection = False
+    Images = ImageList1
+    Indent = 0
+    PopupMenu = PopupMenu2
+    ReadOnly = True
+    ScrollBars = ssAutoVertical
+    SelectionColor = clSilver
+    SelectionFontColor = clNavy
+    SelectionFontColorUsed = True
+    ShowLines = False
+    SortType = stBoth
+    StateImages = ImageList1
+    TabOrder = 10
+    OnClick = TreeView2Click
+    OnCompare = TreeView1Compare
+    OnCustomDrawItem = TreeView2CustomDrawItem
+    OnDeletion = TreeView1Deletion
+    OnKeyDown = TreeView2KeyDown
+    OnMouseDown = TreeView2MouseDown
+    OnMouseLeave = TreeView2MouseLeave
+    OnMouseMove = TreeView2MouseMove
+    OnMouseUp = TreeView2MouseUp
+    OnSelectionChanged = TreeView2SelectionChanged
+    Options = [tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowRoot, tvoToolTips]
+    TreeLinePenStyle = psClear
+  end
+  object SaveShcBtn: TButton
+    Left = 338
+    Height = 38
+    Top = 471
+    Width = 95
+    Caption = 'Sa&ve Shortcuts'
+    OnClick = SaveShcBtnClick
+    TabOrder = 11
   end
   object MainMenu1: TMainMenu
     left = 24
@@ -181,66 +272,25 @@ object Form1: TForm1
           Caption = 'Selected games only'
           OnClick = SelectedOptionClick
         end
-      end
-      object MenuItem9: TMenuItem
-        Caption = '-'
-      end
-      object MenuItem10: TMenuItem
-        Caption = 'Favorites Presets'
-        Enabled = False
-      end
-      object PSlot1: TMenuItem
-        Caption = 'Slot 1'
-        object LoadSlot1: TMenuItem
-          Caption = 'Load'
-          OnClick = LoadSlot1Click
+        object GameInfoOption: TMenuItem
+          Caption = 'Show game information'
+          OnClick = GameInfoOptionClick
         end
-        object SaveSlot1: TMenuItem
-          Caption = 'Save'
-          OnClick = SaveSlot1Click
-        end
-        object MenuItem11: TMenuItem
+      end
+      object PresetsOption: TMenuItem
+        Caption = 'Selection Presets'
+        object MenuItem20: TMenuItem
+          Tag = 999
           Caption = '-'
         end
-        object SlotName1: TMenuItem
-          Caption = 'Rename'
-          OnClick = SlotName1Click
+        object AddPresetOption: TMenuItem
+          Tag = 999
+          Caption = 'Add Preset'
+          OnClick = AddPresetOptionClick
         end
-      end
-      object PSlot2: TMenuItem
-        Caption = 'Slot 2'
-        object LoadSlot2: TMenuItem
-          Caption = 'Load'
-          OnClick = LoadSlot2Click
-        end
-        object SaveSlot2: TMenuItem
-          Caption = 'Save'
-          OnClick = SaveSlot2Click
-        end
-        object MenuItem12: TMenuItem
-          Caption = '-'
-        end
-        object SlotName2: TMenuItem
-          Caption = 'Rename'
-          OnClick = SlotName2Click
-        end
-      end
-      object PSlot3: TMenuItem
-        Caption = 'Slot 3'
-        object LoadSlot3: TMenuItem
-          Caption = 'Load'
-          OnClick = LoadSlot3Click
-        end
-        object SaveSlot3: TMenuItem
-          Caption = 'Save'
-          OnClick = SaveSlot3Click
-        end
-        object MenuItem13: TMenuItem
-          Caption = '-'
-        end
-        object SlotName3: TMenuItem
-          Caption = 'Rename'
-          OnClick = SlotName3Click
+        object DeletePresetOption: TMenuItem
+          Tag = 999
+          Caption = 'Delete Preset'
         end
       end
     end
@@ -249,6 +299,31 @@ object Form1: TForm1
       object MenuItem15: TMenuItem
         Caption = 'Add Home icon to nested sub-folders'
         OnClick = MenuItem15Click
+      end
+      object MenuItem9: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem18: TMenuItem
+        Caption = 'Delete all shortcuts'
+        OnClick = MenuItem18Click
+      end
+      object MenuItem19: TMenuItem
+        Caption = 'Delete selected shortcuts'
+        OnClick = MenuItem19Click
+      end
+      object MenuItem10: TMenuItem
+        Caption = '-'
+      end
+      object AddPrefixesOption: TMenuItem
+        Caption = 'Add console prefixes'
+        OnClick = AddPrefixesOptionClick
+      end
+      object DelPrefixesOption: TMenuItem
+        Caption = 'Remove console prefixes'
+        OnClick = DelPrefixesOptionClick
+      end
+      object MenuItem11: TMenuItem
+        Caption = '-'
       end
       object MenuItem16: TMenuItem
         Caption = 'Backup Folders XML file'
@@ -271,15 +346,6 @@ object Form1: TForm1
       end
     end
   end
-  object PopupMenu1: TPopupMenu
-    OnPopup = PopupMenu1Popup
-    left = 96
-    top = 40
-    object RenameHome: TMenuItem
-      Caption = 'Rename'
-      OnClick = RenameHomeClick
-    end
-  end
   object BackupXMLDlg: TSaveDialog
     Options = [ofOverwritePrompt, ofNoChangeDir, ofNoNetworkButton, ofEnableSizing, ofDontAddToRecent]
     left = 176
@@ -293,5 +359,44 @@ object Form1: TForm1
     Options = [ofPathMustExist, ofEnableSizing, ofViewDetail]
     left = 33
     top = 115
+  end
+  object ImageList1: TImageList
+    left = 240
+    top = 115
+  end
+  object PopupMenu2: TPopupMenu
+    OnPopup = PopupMenu2Popup
+    left = 24
+    top = 200
+    object RenameHome1: TMenuItem
+      Caption = 'Rename'
+      OnClick = RenameHomeClick
+    end
+    object ExplorerOpen1: TMenuItem
+      Caption = 'Open Folder'
+      Visible = False
+      OnClick = ExplorerOpen1Click
+    end
+  end
+  object PopupMenu1: TPopupMenu
+    OnPopup = PopupMenu1Popup
+    left = 161
+    top = 198
+    object CreateFolderMnu: TMenuItem
+      Caption = 'Create new folder'
+      OnClick = CreateFolderMnuClick
+    end
+  end
+  object PngSelectDlg: TOpenDialog
+    Title = 'Select folder icon'
+    DefaultExt = '.png'
+    Filter = 'Portable Network Graphics|*.png'
+    Options = [ofPathMustExist, ofFileMustExist, ofEnableSizing, ofDontAddToRecent, ofViewDetail, ofAutoPreview]
+    left = 240
+    top = 198
+  end
+  object DP1: TIpHttpDataProvider
+    left = 24
+    top = 288
   end
 end

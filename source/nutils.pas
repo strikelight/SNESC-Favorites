@@ -7,12 +7,12 @@ unit nutils;
 interface
 
 uses
-  Classes, SysUtils, Dialogs, Process, WinDirs, CheckLst, ComCtrls, LazFileUtils,
-  futils;
+  Classes, SysUtils, Dialogs, Process, WinDirs, ComCtrls, LazFileUtils,
+  futils, ui_utils;
 
 
 function NANDGetLastFolderNumber:String;
-function NANDCreateFaveLinks(GamesList: TCheckListBox; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
+function NANDCreateFaveLinks(GamesList: TTreeView; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
 function CloverShellPath:String;
 function CloverFileExists(FileName: String; IsDir: Boolean = False):Boolean;
 
@@ -252,13 +252,12 @@ begin
     end;
 end;
 
-function NANDCreateFaveLinks(GamesList: TCheckListBox; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
+function NANDCreateFaveLinks(GamesList: TTreeView; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
 var
-  DeskFile,EmptyFile: TStringList;
+  GL,DeskFile,EmptyFile: TStringList;
   StatusPanel: TStatusPanel;
-  FindLink,FPath,g,t: String;
+  FindLink,FPath,t: String;
   j: Integer;
-  Res: Boolean;
 begin
   FPath := ExtractFilePath(ParamStr(0));
   DeskFile := TStringList.Create;
@@ -267,8 +266,13 @@ begin
   DeskFile.LineBreak := #10; // Hakchi kernel will give c8 errors for Dos LineFeeds
 
   StatusPanel := StatusBar.Panels.Items[1];
-  ProgressBar.Max := GamesList.Count+3;
-  ProgressBar.Position:=0;
+  try
+    GL := TStringList.Create;
+    GetCheckedCodes(GamesList,GL);
+    ProgressBar.Max := GL.Count+3;
+    ProgressBar.Position:=0;
+  finally
+  end;
   StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
   StatusBar.Update;
 
@@ -368,31 +372,25 @@ begin
   StatusBar.Update;
 
   try
-    for j := 0 to GamesList.Count-1 do
+    for j := 0 to GL.Count-1 do
       begin
-        g := GamesList.Items[j];
-        if (g[1] <> '-') and (g[1] <> '=') and (GamesList.Checked[j]) then
-          begin
-            if (Length(GameCodes[j]) > 0) then
-              begin
-                FindLink := CloverShellFind(hakchidir,GameCodes[j]+'.desktop');
+        FindLink := CloverShellFind(hakchidir,GL[j]+'.desktop');
 {$IFDEF DEBUG}
-                debuglog('CreateLinks: Find: '+hakchidir+' '+GameCodes[j]+'.desktop'+ 'Res='+FindLink);
+        debuglog('CreateLinks: Find: '+hakchidir+' '+GL[j]+'.desktop'+ 'Res='+FindLink);
 {$ENDIF}
 {$IFNDEF DEBUG}
-                if (FindLink <> '') then
-                  begin
-                    CloverShellExec('mkdir '+hakchidir+FolderSuff+'/'+GameCodes[j]);
-                    CloverShellExec('cp '+FindLink+' '+hakchidir+FolderSuff+'/'+GameCodes[j]+'/'+GameCodes[j]+'.desktop');
-                  end;
-{$ENDIF}
-              end;
+        if (FindLink <> '') then
+          begin
+            CloverShellExec('mkdir '+hakchidir+FolderSuff+'/'+GL[j]);
+            CloverShellExec('cp '+FindLink+' '+hakchidir+FolderSuff+'/'+GL[j]+'/'+GL[j]+'.desktop');
           end;
+{$ENDIF}
         ProgressBar.Position:=ProgressBar.Position+1;
         StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
         StatusBar.Update;
       end;
   finally
+    GL.Free;
     DeskFile.Free;
     EmptyFile.Free;
   end;
