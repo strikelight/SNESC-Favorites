@@ -237,8 +237,6 @@ begin
   GameInfoOption.Checked:=ViewGameInfo;
   SelectedOption.Checked:=ViewSelected;
   ShortcutsOption.Checked:=ViewShortcuts;
-  VShortcutsView(VST,ViewShortcuts);
-  VSelectionView(VST,ViewSelected);
   VST.FullExpand();
   if (VST.GetFirst() <> nil) then
     case ViewStyle of
@@ -246,6 +244,10 @@ begin
        1: Form1.ParentOptionClick(Self);
        2: Form1.ParentChildOptionClick(Self);
     end;
+  if (ViewShortcuts) then
+    VShortcutsView(VST,ViewShortcuts)
+  else if ViewSelected then
+    VSelectionView(VST,ViewSelected);
   VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
 end;
 
@@ -258,7 +260,12 @@ begin
   MPath := ExtractFileDir(XMLEdit.Caption);
   MPath := ExtractFilePath(MPath);
   MPath := MPath+'folder_images\';
-  Filename:=MPath+URL;
+  Filename := MPath+URL;
+  if (Pos('home/',URL) > 0) then
+    begin
+      MPath := ExtractFilePath(ParamStr(0));
+      FileName := MPath + Copy(URL,6,length(URL));
+    end;
   if not FileExists(Filename) then
     begin
       exit;
@@ -402,11 +409,11 @@ begin
       if (not PopupNotifier1.Visible) then
         PopupNotifier1.ShowAtPos(X1,Y1);
       DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Folder:</b></td><td align="left">'+GData^.Name+'</td>';
-      if (GData^.BelongsTo <> nil) then
+      if (GData^.BelongsTo <> nil) and (GData^.BelongsTo <> node) then
         DisplayText:=DisplayText+'<tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+BData^.Name+'</td></tr>';
-      if (GData^.TopParent <> nil) then
+      if (GData^.TopParent <> nil) and (GData^.TopParent <> node) then
         DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+TData^.Name+'</td></tr>';
-      if (GData^.Icon <> '') and (FileExists(MPath+'\'+GData^.Icon+'.png')) then
+      if (GData^.Icon <> '') then
         begin
           DisplayText:=DisplayText+'<tr><td align="center" colspan="2"><br/><img height="50" width="50" src="'+GData^.Icon+'.png" /></td></tr>';
         end;
@@ -562,11 +569,11 @@ begin
       if (not PopupNotifier1.Visible) then
         PopupNotifier1.ShowAtPos(X1,Y1);
       DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Folder:</b></td><td align="left">'+GData^.Name+'</td>';
-      if (GData^.BelongsTo <> nil) then
+      if (GData^.BelongsTo <> nil) and (GData^.BelongsTo <> node) then
         DisplayText:=DisplayText+'<tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+BData^.Name+'</td></tr>';
-      if (GData^.TopParent <> nil) then
+      if (GData^.TopParent <> nil) and (GData^.TopParent <> node) then
         DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+TData^.Name+'</td></tr>';
-      if (GData^.Icon <> '') and (FileExists(MPath+'\'+GData^.Icon+'.png')) then
+      if (GData^.Icon <> '') then
         begin
           DisplayText:=DisplayText+'<tr><td align="center" colspan="2"><br/><img height="50" width="50" src="'+GData^.Icon+'.png" /></td></tr>';
         end;
@@ -665,8 +672,6 @@ begin
     ChkStringList.Free;
   end;
   VST.FullExpand();
-  VShortcutsView(VST,ViewShortcuts);
-  VSelectionView(VST,ViewSelected);
   VPopulatePathData(VST,GamesEdit.Caption);
   VPopulateFolderData(VST,GamesEdit.Caption);
   VPopulateFolderData(SVST,GamesEdit.Caption);
@@ -677,6 +682,10 @@ begin
        1: Form1.ParentOptionClick(Self);
        2: Form1.ParentChildOptionClick(Self);
     end;
+  if (ViewShortcuts) then
+    VShortcutsView(VST,ViewShortcuts)
+  else if ViewSelected then
+    VSelectionView(VST,ViewSelected);
   VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
 end;
 

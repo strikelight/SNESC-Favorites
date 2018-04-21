@@ -1169,7 +1169,7 @@ procedure XML2VTree(Tree: TVirtualStringTree; Filename: String; UseGames: Boolea
 var
   XMLDoc: TXMLDocument;
   iNode: TDOMNode;
-  FPath: String;
+  FPath,hicon: String;
   FData: TStringList;
   GData: PTreeData;
   TreeNode: PVirtualNode;
@@ -1177,7 +1177,7 @@ var
     procedure nProcessNode(Node: TDOMNode; TreeNode: PVirtualNode);
     var
       cNode: TDOMNode;
-      s,c,d: string;
+      s,t,c,d: string;
       GDataT,GDataU: PTreeData;
       tNode,tNode2: PVirtualNode;
     begin
@@ -1190,9 +1190,12 @@ var
             s := Node.Attributes[0].NodeValue
           else
             s := '';
-
+          if Node.HasAttributes and (Node.Attributes.Length>1) then
+            t := Node.Attributes[1].NodeValue
+          else
+            t := '';
           tNode2 := Tree.AddChild(TreeNode,nil);
-          GData := SetNodeData(Tree,tNode2,s,'Folder','','','',TreeNode);
+          GData := SetNodeData(Tree,tNode2,s,'Folder','','',t,TreeNode);
 
           if (GData^.TopParent = nil) then GData^.TopParent := TreeNode;
 
@@ -1269,7 +1272,11 @@ begin
   DeleteFile(FPath+ExtractFileName(Filename)+'.tmp');
   Tree.Clear;
   TreeNode := Tree.AddChild(nil);
-  SetNodeData(Tree,TreeNode,HomeName,'Folder','','HOME','',nil);
+  if (FileExists(FPath+'folder_home.png')) then
+    hicon := 'home/folder_home'
+  else
+    hicon := '';
+  SetNodeData(Tree,TreeNode,HomeName,'Folder','','HOME',hicon,nil);
   Tree.CheckState[TreeNode] := csUncheckedNormal;
   iNode := XMLDoc.DocumentElement.FirstChild;
   while iNode <> nil do
