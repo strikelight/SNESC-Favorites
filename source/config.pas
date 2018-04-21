@@ -98,10 +98,8 @@ end;
 function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; vGameTree: TVirtualStringTree; vTreeView: TVirtualStringTree; var NANDCheckBox:TCheckBox; var ViewStyle:Integer; var ViewSelected:Boolean; var ViewShortcuts:Boolean; var ViewGameInfo:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
 var
   Ini: TIniFile;
-  ChkStringList,SlotList: TStringList;
-  AppPath,CheckedGames,CheckedHashes,SlotName: String;
-  i: integer;
-  tm,tm2,tm3: TMenuItem;
+  ChkStringList: TStringList;
+  AppPath,CheckedGames,CheckedHashes: String;
 begin
   AppPath := ExtractFilePath(ParamStr(0));
   Ini := TIniFile.Create(AppPath+'config.ini');

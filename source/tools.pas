@@ -26,7 +26,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, IniFiles, Dialogs, ComCtrls, Controls, Graphics,
   FPImage, FPCanvas, FPImgCanv, FPReadJPEG, FPWriteJPEG, FPReadPNG, FPWritePNG, FPReadBMP,
-  RegExpr, ui_utils;
+  RegExpr;
 
 function AddHomeIcons(Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
 function BackupXML (Filename: String; Dialog: TSaveDialog):Boolean;
@@ -53,7 +53,6 @@ var
   Canvas: TFPImageCanvas;
   Reader: TFPCustomImageReader;
   Writer: TFPCustomImageWriter;
-  StartTime: DWord;
 begin
   result := false;
   ext := LowerCase(ExtractFileExt(InFile));

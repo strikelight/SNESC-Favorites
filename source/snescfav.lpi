@@ -16,7 +16,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
       <RevisionNr Value="8"/>
-      <BuildNr Value="5"/>
+      <BuildNr Value="6"/>
       <Attributes pvaPreRelease="True" pvaPrivateBuild="True"/>
       <StringTable CompanyName="strikelight" FileDescription="Create a favorites shortcut on SNES mini with selected games." OriginalFilename="snescfav.exe" ProductName="SNESC Favorites" ProductVersion="1.0.8-beta"/>
     </VersionInfo>

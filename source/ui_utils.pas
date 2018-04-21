@@ -28,7 +28,7 @@ interface
 
 uses
   Classes, SysUtils, Controls, LCLtype, LCLIntf, Graphics, ComCtrls,
-  laz2_xmlread, laz2_dom, ImgList, Themes, Types, Dialogs, FileUtil,
+  laz2_xmlread, laz2_dom, Themes, Types, Dialogs, FileUtil,
   crc, RegExpr, VirtualTrees;
 
 type
@@ -51,8 +51,7 @@ function VGetCheckCount(Tree: TVirtualStringTree; StatusPanel: TStatusPanel; Upd
 procedure XML2VTree(Tree: TVirtualStringTree; Filename: String; UseGames: Boolean = False; HomeName: String = 'HOME';
                    ViewStyle: Integer = 2);
 function SetNodeData(Tree: TVirtualStringTree; Node: PVirtualNode; FName: String; FType: String; FilePath: String;
-                      Code: String; Hash: String; FIcon: String;
-                      BelongsTo: PVirtualNode; TopParent: PVirtualNode):PTreeData;
+                      Code: String; FIcon: String; BelongsTo: PVirtualNode):PTreeData;
 function FindVNodeData(Tree: TVirtualStringTree; PNode: PVirtualNode; Search: String; Field: Integer; Children: Boolean = True):PVirtualNode;
 procedure CheckVNode(Tree: TVirtualStringTree; Node: PVirtualNode; Checked:boolean);
 procedure ToggleVTreeViewCheckBoxes(Tree: TVirtualStringTree; Node: PVirtualNode);
@@ -105,7 +104,7 @@ var
 
   procedure nProcessNode(Node: PVirtualNode);
   var
-    GData,nData: PTreeData;
+    GData: PTreeData;
     nNode,sNode,cNode,cNode2: PVirtualNode;
   begin
     if (Node = nil) then exit;
@@ -118,7 +117,7 @@ var
       begin
         Dest.Expanded[sNode] := True;
         nNode := Dest.AddChild(sNode);
-        nData := SetNodeData(Dest,nNode,GData^.Name,'Game',GData^.FilePath,GData^.Code,GData^.Hash,GData^.Icon,sNode,nil);
+        SetNodeData(Dest,nNode,GData^.Name,'Game',GData^.FilePath,GData^.Code,GData^.Icon,sNode);
       end;
 
     // Goes to the child node
@@ -603,8 +602,8 @@ begin
 end;
 
 function SetNodeData(Tree: TVirtualStringTree; Node: PVirtualNode; FName: String; FType: String; FilePath: String;
-                      Code: String; Hash: String; FIcon: String;
-                      BelongsTo: PVirtualNode; TopParent: PVirtualNode):PTreeData;
+                      Code: String; FIcon: String;
+                      BelongsTo: PVirtualNode):PTreeData;
 var
   Data: PTreeData;
   rNode: PVirtualNode;
@@ -631,7 +630,7 @@ var
   lNode,lNode2,mNode,mNode2,fNode,fNode2,nNode: PVirtualNode;
   i: Integer;
   fpath,GameCode: String;
-  GData,GData2,dData,dData2: PTreeData;
+  GData2: PTreeData;
 begin
   if (Trim(Path) = '') or (Tree.GetFirst() = nil) then exit;
   FList := TStringList.Create;
@@ -648,21 +647,17 @@ begin
         lNode := Tree.GetFirst();
         while (lNode <> nil) do
           begin
-            dData := Tree.GetNodeData(lNode);
             lNode2 := Tree.GetNextSibling(lNode);
             fNode := nil;
             fNode := FindVNodeData(Tree,lNode,fpath,4);
             if (fNode <> nil) then
               begin
-                dData := Tree.GetNodeData(fNode);
                 fNode2 := nil;
                 mNode := Tree.GetFirst();
                 while (mNode <> nil) do
                   begin
-                    dData := Tree.GetNodeData(mNode);
                     mNode2 := Tree.GetNextSibling(mNode);
                     fNode2 := FindVNodeData(Tree,mNode,GameCode,1);
-                    dData := Tree.GetNodeData(fNode2);
                     if (fNode2 <> nil) then mNode := nil
                     else mNode := mNode2;
                   end;
@@ -671,8 +666,8 @@ begin
                     lNode2 := nil;
                     nNode := Tree.AddChild(fNode);
                     GData2 := Tree.GetNodeData(fNode2);
-                    GData := SetNodeData(Tree,nNode,GData2^.Name,'Shortcut',
-                             ExtractFilePath(FList[i]),GameCode,'','',fNode,nil);
+                    SetNodeData(Tree,nNode,GData2^.Name,'Shortcut',
+                             ExtractFilePath(FList[i]),GameCode,'',fNode);
                     CheckVNode(Tree,nNode,False);
                   end;
               end;
@@ -881,7 +876,7 @@ var
   procedure nProcessNode(Node: PVirtualNode);
   var
     rNode,cNode,cNode2: PVirtualNode;
-    GData,DData,DData2: PTreeData;
+    GData: PTreeData;
     AttachMode: TVTNodeAttachMode;
     t: Boolean;
   begin
@@ -1182,7 +1177,7 @@ var
     procedure nProcessNode(Node: TDOMNode; TreeNode: PVirtualNode);
     var
       cNode: TDOMNode;
-      s,t,c,d: string;
+      s,c,d: string;
       GDataT,GDataU: PTreeData;
       tNode,tNode2: PVirtualNode;
     begin
@@ -1195,13 +1190,9 @@ var
             s := Node.Attributes[0].NodeValue
           else
             s := '';
-          if Node.HasAttributes and (Node.Attributes.Length>1) then
-            t := Node.Attributes[1].NodeValue
-          else
-            t := '';
 
           tNode2 := Tree.AddChild(TreeNode,nil);
-          GData := SetNodeData(Tree,tNode2,s,'Folder','','','','',TreeNode,nil);
+          GData := SetNodeData(Tree,tNode2,s,'Folder','','','',TreeNode);
 
           if (GData^.TopParent = nil) then GData^.TopParent := TreeNode;
 
@@ -1228,7 +1219,7 @@ var
           else tNode := TreeNode;
 
           tNode2 := Tree.AddChild(tNode,nil);
-          GData := SetNodeData(Tree,tNode2,s,'Game','',c,'','',tNode,nil);
+          GData := SetNodeData(Tree,tNode2,s,'Game','',c,'',tNode);
 
           Tree.CheckType[tNode2] := ctCheckbox;
           Tree.CheckState[tNode2] := csUncheckedNormal;
@@ -1278,7 +1269,7 @@ begin
   DeleteFile(FPath+ExtractFileName(Filename)+'.tmp');
   Tree.Clear;
   TreeNode := Tree.AddChild(nil);
-  SetNodeData(Tree,TreeNode,HomeName,'Folder','','HOME','','',nil,nil);
+  SetNodeData(Tree,TreeNode,HomeName,'Folder','','HOME','',nil);
   Tree.CheckState[TreeNode] := csUncheckedNormal;
   iNode := XMLDoc.DocumentElement.FirstChild;
   while iNode <> nil do

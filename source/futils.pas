@@ -41,9 +41,7 @@ implementation
 
 procedure VTreeToXML(Tree: TVirtualStringTree; Filename: String);
 var
-  i: integer;
   lNode,lNode2: PVirtualNode;
-  GData: PTreeData;
   Data: TStringList;
 
   procedure nProcessNode(Node: PVirtualNode);
@@ -103,12 +101,11 @@ end;
 procedure DeleteShortcuts(Tree: TVirtualStringTree; SelectedOnly: Boolean = False);
 var
   lNode,lNode2: PVirtualNode;
-  GData: PTreeData;
 
   procedure nProcessNode(Node: PVirtualNode);
   var
     GData: PTreeData;
-    nNode,cNode,cNode2: PVirtualNode;
+    cNode,cNode2: PVirtualNode;
     Res,Process: Boolean;
   begin
     if (Node = nil) then exit;

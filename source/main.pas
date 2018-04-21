@@ -1190,7 +1190,7 @@ begin
           if (Node = SVST.GetFirst()) then pNode := nil
           else pNode := Node;
           nNode := SVST.AddChild(pNode);
-          GData2 := SetNodeData(SVST,nNode,NewName,'Folder','','','','',pNode,nil);
+          GData2 := SetNodeData(SVST,nNode,NewName,'Folder','','','',pNode);
           GData2^.Icon := GData2^.Hash;
           if (GData2^.TopParent = nil) then GData2^.TopParent := nNode;
           LFName := GetLastFolderNumber(ConsolePath);
@@ -1249,7 +1249,7 @@ begin
 
                   nNode2 := VST.AddChild(pNode);
                   GData3 := SetNodeData(VST,nNode2,GData2^.Name,GData2^.FType,
-                            ConsolePath+LFName,GData2^.Code,'',GData2^.Icon,pNode,nil);
+                            ConsolePath+LFName,GData2^.Code,GData2^.Icon,pNode);
                   if (GData3^.TopParent = nil) then GData3^.TopParent := nNode2;
                   VST.ScrollIntoView(nNode2,False);
                 end;
