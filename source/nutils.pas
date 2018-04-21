@@ -268,7 +268,7 @@ begin
   StatusPanel := StatusBar.Panels.Items[1];
   try
     GL := TStringList.Create;
-    GetCheckedCodes(GamesList,GL);
+ //   GetCheckedCodes(GamesList,GL); - Needs VST refactoring
     ProgressBar.Max := GL.Count+3;
     ProgressBar.Position:=0;
   finally

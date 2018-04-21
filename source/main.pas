@@ -26,10 +26,10 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus, IPHtml,
-  ComCtrls, Types, StdCtrls, lcltype, lclintf, ExtCtrls, EditBtn, Inifiles,
-  Buttons, MouseAndKeyInput, Iphttpbroker, ui_utils, futils, nutils, config,
-  help, about, tools, popupex;
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
+  IPHtml, ComCtrls, Types, StdCtrls, lcltype, lclintf, Math, ExtCtrls, EditBtn,
+  Inifiles, Buttons, MouseAndKeyInput, Iphttpbroker, VirtualTrees, ui_utils,
+  futils, nutils, config, help, about, tools, popupex;
 
 type
   TSimpleIpHtml = class(TIpHtml)
@@ -38,12 +38,6 @@ type
   end;
 
   { TForm1 }
-  TMyTreeView = class(TTreeView)
-  private
-//    procedure WMVScroll(var Msg :TLMessage); message WM_VSCROLL;
-  public
-  end;
-
   TForm1 = class(TForm)
     Bevel1: TBevel;
     ExplorerOpen1: TMenuItem;
@@ -53,6 +47,8 @@ type
     AddPrefixesOption: TMenuItem;
     MenuItem11: TMenuItem;
     DelPrefixesOption: TMenuItem;
+    MenuItem12: TMenuItem;
+    ShortcutsOption: TMenuItem;
     MenuItem18: TMenuItem;
     MenuItem19: TMenuItem;
     CreateFolderMnu: TMenuItem;
@@ -64,7 +60,6 @@ type
     SaveShcBtn: TButton;
     ClearShcBtn: TButton;
     AddShortCutsBtn: TButton;
-    ImageList1: TImageList;
     Label4: TLabel;
     GameInfoOption: TMenuItem;
     NANDCheckBox: TCheckBox;
@@ -92,10 +87,10 @@ type
     ParentChildOption: TMenuItem;
     ParentOption: TMenuItem;
     StatusBar1: TStatusBar;
-    TreeView1: TTreeView;
-    TreeView2: TTreeView;
     ViewMenu: TMenuItem;
     PopupNotifier1: TPopupEx;
+    SVST: TVirtualStringTree;
+    VST: TVirtualStringTree;
     XMLEdit: TFileNameEdit;
     Label2: TLabel;
     SaveBtn: TButton;
@@ -119,8 +114,6 @@ type
     procedure FlatOptionClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
-    procedure FormMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
     procedure GameInfoOptionClick(Sender: TObject);
     procedure LoadBtnClick(Sender: TObject);
     procedure MenuItem15Click(Sender: TObject);
@@ -137,32 +130,38 @@ type
     procedure RenameHomeClick(Sender: TObject);
     procedure SaveBtnClick(Sender: TObject);
     procedure SelectedOptionClick(Sender: TObject);
-    procedure TreeView1Compare(Sender: TObject; Node1, Node2: TTreeNode;
-      var Compare: Integer);
-    procedure TreeView1CustomDrawItem(Sender: TCustomTreeView; Node: TTreeNode;
-      State: TCustomDrawState; var DefaultDraw: Boolean);
-    procedure TreeView1Deletion(Sender: TObject; Node: TTreeNode);
-    procedure TreeView1MouseDown(Sender: TObject; Button: TMouseButton;
+    procedure ShortcutsOptionClick(Sender: TObject);
+    procedure SVSTCompareNodes(Sender: TBaseVirtualTree; Node1,
+      Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+    procedure SVSTDrawText(Sender: TBaseVirtualTree; TargetCanvas: TCanvas;
+      Node: PVirtualNode; Column: TColumnIndex; const CellText: String;
+      const CellRect: TRect; var DefaultDraw: Boolean);
+    procedure SVSTMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure TreeView2Click(Sender: TObject);
-    procedure TreeView2CustomDrawItem(Sender: TCustomTreeView; Node: TTreeNode;
-      State: TCustomDrawState; var DefaultDraw: Boolean);
-    procedure TreeView2KeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-    procedure TreeView2MouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure TreeView2MouseLeave(Sender: TObject);
-    procedure TreeView2MouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
-    procedure TreeView2MouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure TreeView2SelectionChanged(Sender: TObject);
     procedure LoadSlotClick(Sender: TObject);
     procedure SaveSlotClick(Sender: TObject);
     procedure RenameSlotClick(Sender: TObject);
     procedure DeleteSlotClick(Sender: TObject);
     procedure DataProviderGetImage(Sender: TIpHtmlNode; const URL: string;
           var Picture: TPicture);
+    procedure VSTAfterItemPaint(Sender: TBaseVirtualTree;
+      TargetCanvas: TCanvas; Node: PVirtualNode; const ItemRect: TRect);
+    procedure VSTChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure VSTCompareNodes(Sender: TBaseVirtualTree; Node1,
+      Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+    procedure VSTFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex);
+    procedure VSTFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure VSTGetNodeDataSize(Sender: TBaseVirtualTree;
+      var NodeDataSize: Integer);
+    procedure VSTGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+    procedure VSTIncrementalSearch(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; const SearchText: String; var Result: Integer);
+    procedure VSTMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure VSTMouseLeave(Sender: TObject);
+    procedure VSTMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
   private
     { private declarations }
     progressBar: TProgressBar;
@@ -170,8 +169,8 @@ type
     statusPanel1: TStatusPanel;
   public
     { public declarations }
-    procedure ToggleCheck(node: TTreeNode);
     procedure InitSlots;
+    function GetKeyPressed(const VKeyCode: Integer): Boolean;
   end;
 
 
@@ -180,6 +179,7 @@ var
   LastFavFolder: String;
   ViewStyle: Integer;
   ViewSelected: Boolean;
+  ViewShortcuts: Boolean;
   ViewGameInfo: Boolean;
   LastUsedXML: String;
   HomeName: String;
@@ -189,12 +189,6 @@ implementation
 
 {$R *.lfm}
 
-{procedure WMVScroll(var Msg :TLMessage);
-begin
-  inherited;
-  Form1.TreeView2.Update;
-end;
- }
 { TForm1 }
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -202,16 +196,16 @@ var
   r: TRect;
 begin
   Form1.Caption := GetProductName+' - '+GetProductVersion;
-  TreeView2.DoubleBuffered:=True;
+  VST.DoubleBuffered:=True;
   PopupNotifier1 := TPopupEx.Create(Self);
   PopupNotifier1.Color:=clSkyBlue;
   PopupNotifier1.Title:='Game Information';
   PopupNotifier1.vNotifierForm.ButtonSize:=0;
   DP1.OnGetImage:=@DataProviderGetImage;
   PopupNotifier1.vNotifierForm.htmlPnl.DataProvider:=DP1;
-  r.Left:=TreeView2.ClientOrigin.X+5;
-  r.Right:=TreeView2.ClientOrigin.X+(Form1.Width - (TreeView2.ClientOrigin.X+TreeView2.Width))-10;
-  r.Top:=TreeView2.ClientOrigin.Y;
+  r.Left:=VST.ClientOrigin.X+5;
+  r.Right:=VST.ClientOrigin.X+(Form1.Width - (VST.ClientOrigin.X+VST.Width))-10;
+  r.Top:=VST.ClientOrigin.Y;
   r.Bottom:=Bevel1.ClientOrigin.Y-10;
   PopupNotifier1.vNotifierForm.HintRect:=r;
   PopupNotifier1.vNotifierForm.Width:=r.Right-r.Left;
@@ -229,11 +223,10 @@ begin
   progressBar.Visible:=False;
   LastFavFolder := '';
   HomeName := 'HOME';
-  InitChecks(ImageList1);
   FlatOption.Checked:=False;
   ParentOption.Checked:=False;
   ParentChildOption.Checked:=False;
-  LoadConfig(XMLEdit,GamesEdit,TreeView2,TreeView1,NANDCheckBox,ViewStyle,ViewSelected,ViewGameInfo,LastFavFolder,HomeName);
+  LoadConfig(XMLEdit,GamesEdit,VST,SVST,NANDCheckBox,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,LastFavFolder,HomeName);
   InitSlots;
   LastUsedXML:=XMLEdit.Caption;
   case ViewStyle of
@@ -243,16 +236,17 @@ begin
   end;
   GameInfoOption.Checked:=ViewGameInfo;
   SelectedOption.Checked:=ViewSelected;
-  SelectionView(TreeView2,ViewSelected);
-  TreeView2.FullExpand;
-  TreeView2.AlphaSort;
-  if (TreeView2.Items.Count > 0) then
+  ShortcutsOption.Checked:=ViewShortcuts;
+  VShortcutsView(VST,ViewShortcuts);
+  VSelectionView(VST,ViewSelected);
+  VST.FullExpand();
+  if (VST.GetFirst() <> nil) then
     case ViewStyle of
        0: Form1.FlatOptionClick(Self);
        1: Form1.ParentOptionClick(Self);
        2: Form1.ParentChildOptionClick(Self);
     end;
-  GetCheckCount(TreeView2, StatusBar1.Panels.Items[0], True);
+  VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
 end;
 
 procedure TForm1.DataProviderGetImage(Sender: TIpHtmlNode;
@@ -282,6 +276,309 @@ begin
       Picture.Free;
     Picture := nil;
   end;
+end;
+
+procedure TForm1.VSTAfterItemPaint(Sender: TBaseVirtualTree;
+  TargetCanvas: TCanvas; Node: PVirtualNode; const ItemRect: TRect);
+begin
+  VTreeViewDrawItem(Sender,TargetCanvas,Node,ItemRect);
+end;
+
+procedure TForm1.VSTChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  checked: integer;
+begin
+  checked := VGetCheckCount(VST, StatusPanel0,False);
+  if VNodeChecked(VST,Node) then
+    begin
+      if (checked > 30) then
+        begin
+          CheckVNode(VST,Node,False);
+          Dec(checked);
+          MessageDlg('Error','Maximum of 30 favorites allowed.',mtError,[mbOk],0);
+        end;
+    end
+  else if ViewSelected then
+    begin
+      SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,HomeName,VST);
+    end;
+  checked := VGetCheckCount(VST, StatusPanel0, True);
+end;
+
+procedure TForm1.VSTCompareNodes(Sender: TBaseVirtualTree; Node1,
+  Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+var
+  GData1,GData2: PTreeData;
+begin
+  with Sender as TVirtualStringTree do
+    begin
+      Result := 0;
+      GData1 := GetNodeData(Node1);
+      GData2 := GetNodeData(Node2);
+      if ((GData1^.FType = 'Game') or (GData1^.FType = 'Shortcut')) and (GData2^.FType = 'Folder') then
+        Result := -1
+      else if (GData1^.FType = 'Folder') and ((GData2^.FType = 'Game') or (GData2^.FType = 'Shortcut')) then
+        Result := 1
+      else if ((GData1^.FType = 'Game') or (GData1^.FType = 'Shortcut')) and ((GData2^.Ftype = 'Game') or (GData2^.FType = 'Shortcut')) then
+        Result := CompareText(GData1^.Name,GData2^.Name);
+    end;
+end;
+
+procedure TForm1.VSTFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode;
+  Column: TColumnIndex);
+var
+  GData,BData,TData: PTreeData;
+  X1,Y1: Integer;
+  OControl: TWinControl;
+  DisplayText,MPath: String;
+  Flush: Boolean;
+begin
+  if (VST.GetFirst() = nil) then exit;
+  Flush := False;
+  if (node = nil) then
+   begin
+     PopupNotifier1.Text:='';
+     PopupNotifier1.Hide;
+     exit;
+   end;
+  GData := VST.GetNodeData(node);
+  BData := VST.GetNodeData(GData^.BelongsTo);
+  TData := VST.GetNodeData(GData^.TopParent);
+  Y1 := VST.ClientOrigin.y;
+  X1 := VST.ClientOrigin.x+VST.Width+5;
+  OControl := Form1.ActiveControl;
+  if (ViewGameInfo) and (GData^.FType = 'Game') and (GData^.BelongsTo <> nil) then
+    begin
+      if (PopupNotifier1.vNotifierForm.Color <> clSkyBlue) then
+        Flush := True;
+      PopupNotifier1.vNotifierForm.Color := clSkyBlue;
+      PopupNotifier1.vNotifierForm.htmlColor := clSkyBlue;
+      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clSkyBlue);
+      if (not PopupNotifier1.Visible) then
+        PopupNotifier1.ShowAtPos(X1,Y1);
+      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Game:</b></td><td align="left">'+GData^.Name+'</td><tr><td align="left">'+'<b>Game Code:</b></td><td align="left">'+GData^.Code+'</td></tr><tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+BData^.Name+'</td></tr>';
+      if (GData^.TopParent <> nil) then
+       DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+TData^.Name+'</td></tr>';
+      DisplayText:=DisplayText+'</table>';
+      if (Flush) then
+       begin
+         PopupNotifier1.Text:='';
+         PopupNotifier1.vNotifierForm.Repaint;
+       end;
+      PopupNotifier1.Text:=DisplayText;
+      OControl.SetFocus;
+    end
+  else if (ViewGameInfo) and (GData^.FType = 'Shortcut') and (GData^.BelongsTo <> nil) then
+    begin
+      if (PopupNotifier1.vNotifierForm.Color <> clFuchsia) then
+        Flush := True;
+      PopupNotifier1.vNotifierForm.Color := clFuchsia;
+      PopupNotifier1.vNotifierForm.htmlColor := clFuchsia;
+      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clFuchsia);
+      if (not PopupNotifier1.Visible) then
+        PopupNotifier1.ShowAtPos(X1,Y1);
+      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Game:</b></td><td align="left">'+GData^.Name+'</td><tr><td align="left">'+'<b>Game Code:</b></td><td align="left">'+GData^.Code+'</td></tr><tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+BData^.Name+'</td></tr>';
+      if (GData^.TopParent <> nil) then
+       DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+TData^.Name+'</td></tr>';
+      DisplayText:=DisplayText+'</table>';
+      if (Flush) then
+       begin
+         PopupNotifier1.Text:='';
+         PopupNotifier1.vNotifierForm.Repaint;
+       end;
+      PopupNotifier1.Text:=DisplayText;
+      OControl.SetFocus;
+    end
+  else if (ViewGameInfo) and (GData^.FType = 'Folder') then
+    begin
+      MPath := ExtractFileDir(XMLEdit.Caption);
+      MPath := ExtractFilePath(MPath);
+      MPath := MPath+'folder_images';
+      if (PopupNotifier1.vNotifierForm.Color <> clSkyBlue) then
+        Flush := True;
+      PopupNotifier1.vNotifierForm.Color := clSkyBlue;
+      PopupNotifier1.vNotifierForm.htmlColor := clSkyBlue;
+      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clSkyBlue);
+      if (not PopupNotifier1.Visible) then
+        PopupNotifier1.ShowAtPos(X1,Y1);
+      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Folder:</b></td><td align="left">'+GData^.Name+'</td>';
+      if (GData^.BelongsTo <> nil) then
+        DisplayText:=DisplayText+'<tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+BData^.Name+'</td></tr>';
+      if (GData^.TopParent <> nil) then
+        DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+TData^.Name+'</td></tr>';
+      if (GData^.Icon <> '') and (FileExists(MPath+'\'+GData^.Icon+'.png')) then
+        begin
+          DisplayText:=DisplayText+'<tr><td align="center" colspan="2"><br/><img height="50" width="50" src="'+GData^.Icon+'.png" /></td></tr>';
+        end;
+      DisplayText:=DisplayText+'</table>';
+      if (Flush) then
+       begin
+         PopupNotifier1.Text:='';
+         PopupNotifier1.vNotifierForm.Repaint;
+       end;
+      PopupNotifier1.Text:=DisplayText;
+      OControl.SetFocus;
+    end;
+end;
+
+procedure TForm1.VSTFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  Data: PTreeData;
+begin
+  Data := TVirtualStringTree(Sender).GetNodeData(Node);
+  if Assigned(Data) then
+    begin
+      Data^.BelongsTo:=nil;
+      Data^.TopParent:=nil;
+      Data^.Code:='';
+      Data^.FilePath:='';
+      Data^.FType:='';
+      Data^.Name:='';
+      Data^.Hash:='';
+      Data^.Icon:='';
+    end;
+end;
+
+procedure TForm1.VSTGetNodeDataSize(Sender: TBaseVirtualTree;
+  var NodeDataSize: Integer);
+begin
+  NodeDataSize := SizeOf(TTreeData);
+end;
+
+procedure TForm1.VSTGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+  Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
+var
+  Data: PTreeData;
+begin
+  Data := TVirtualStringTree(Sender).GetNodeData(Node);
+  CellText := Data^.Name;
+end;
+
+procedure TForm1.VSTIncrementalSearch(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; const SearchText: String; var Result: Integer);
+var
+  S,PText: String;
+  GData: PTreeData;
+begin
+  S := SearchText;
+  GData := TVirtualStringTree(Sender).GetNodeData(Node);
+  PText := GData^.Name;
+  Result := StrLIComp(PChar(S), PChar(PText), Min(Length(S), Length(PText)));
+end;
+
+procedure TForm1.VSTMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if (Button = mbRight) then
+   MouseInput.Click(mbLeft,[]);
+end;
+
+procedure TForm1.VSTMouseLeave(Sender: TObject);
+begin
+  if PopupNotifier1.Visible then
+   begin
+     PopupNotifier1.Text:='';
+     PopupNotifier1.Hide;
+   end;
+end;
+
+procedure TForm1.VSTMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer
+  );
+var
+  node: PVirtualNode;
+  GData,BData,TData: PTreeData;
+  X1,Y1: Integer;
+  OControl: TWinControl;
+  DisplayText,MPath: String;
+  Flush: Boolean;
+begin
+  if (VST.GetFirst() = nil) then exit;
+  Flush := False;
+  node := VST.GetNodeAt(X, Y);
+  if (node = nil) then
+   begin
+     PopupNotifier1.Text:='';
+     PopupNotifier1.Hide;
+     exit;
+   end;
+  GData := VST.GetNodeData(node);
+  BData := VST.GetNodeData(GData^.BelongsTo);
+  TData := VST.GetNodeData(GData^.TopParent);
+  Y1 := VST.ClientOrigin.y;
+  X1 := VST.ClientOrigin.x+VST.Width+5;
+  OControl := Form1.ActiveControl;
+  if (ViewGameInfo) and (GData^.FType = 'Game') and (GData^.BelongsTo <> nil) then
+    begin
+      if (PopupNotifier1.vNotifierForm.Color <> clSkyBlue) then
+        Flush := True;
+      PopupNotifier1.vNotifierForm.Color := clSkyBlue;
+      PopupNotifier1.vNotifierForm.htmlColor := clSkyBlue;
+      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clSkyBlue);
+      if (not PopupNotifier1.Visible) then
+        PopupNotifier1.ShowAtPos(X1,Y1);
+      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Game:</b></td><td align="left">'+GData^.Name+'</td><tr><td align="left">'+'<b>Game Code:</b></td><td align="left">'+GData^.Code+'</td></tr><tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+BData^.Name+'</td></tr>';
+      if (GData^.TopParent <> nil) then
+       DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+TData^.Name+'</td></tr>';
+      DisplayText:=DisplayText+'</table>';
+      if (Flush) then
+       begin
+         PopupNotifier1.Text:='';
+         PopupNotifier1.vNotifierForm.Repaint;
+       end;
+      PopupNotifier1.Text:=DisplayText;
+      OControl.SetFocus;
+    end
+  else if (ViewGameInfo) and (GData^.FType = 'Shortcut') and (GData^.BelongsTo <> nil) then
+    begin
+      if (PopupNotifier1.vNotifierForm.Color <> clFuchsia) then
+        Flush := True;
+      PopupNotifier1.vNotifierForm.Color := clFuchsia;
+      PopupNotifier1.vNotifierForm.htmlColor := clFuchsia;
+      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clFuchsia);
+      if (not PopupNotifier1.Visible) then
+        PopupNotifier1.ShowAtPos(X1,Y1);
+      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Game:</b></td><td align="left">'+GData^.Name+'</td><tr><td align="left">'+'<b>Game Code:</b></td><td align="left">'+GData^.Code+'</td></tr><tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+BData^.Name+'</td></tr>';
+      if (GData^.TopParent <> nil) then
+       DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+TData^.Name+'</td></tr>';
+      DisplayText:=DisplayText+'</table>';
+      if (Flush) then
+       begin
+         PopupNotifier1.Text:='';
+         PopupNotifier1.vNotifierForm.Repaint;
+       end;
+      PopupNotifier1.Text:=DisplayText;
+      OControl.SetFocus;
+    end
+  else if (ViewGameInfo) and (GData^.FType = 'Folder') then
+    begin
+      MPath := ExtractFileDir(XMLEdit.Caption);
+      MPath := ExtractFilePath(MPath);
+      MPath := MPath+'folder_images';
+      if (PopupNotifier1.vNotifierForm.Color <> clSkyBlue) then
+        Flush := True;
+      PopupNotifier1.vNotifierForm.Color := clSkyBlue;
+      PopupNotifier1.vNotifierForm.htmlColor := clSkyBlue;
+      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clSkyBlue);
+      if (not PopupNotifier1.Visible) then
+        PopupNotifier1.ShowAtPos(X1,Y1);
+      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Folder:</b></td><td align="left">'+GData^.Name+'</td>';
+      if (GData^.BelongsTo <> nil) then
+        DisplayText:=DisplayText+'<tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+BData^.Name+'</td></tr>';
+      if (GData^.TopParent <> nil) then
+        DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+TData^.Name+'</td></tr>';
+      if (GData^.Icon <> '') and (FileExists(MPath+'\'+GData^.Icon+'.png')) then
+        begin
+          DisplayText:=DisplayText+'<tr><td align="center" colspan="2"><br/><img height="50" width="50" src="'+GData^.Icon+'.png" /></td></tr>';
+        end;
+      DisplayText:=DisplayText+'</table>';
+      if (Flush) then
+       begin
+         PopupNotifier1.Text:='';
+         PopupNotifier1.vNotifierForm.Repaint;
+       end;
+      PopupNotifier1.Text:=DisplayText;
+      OControl.SetFocus;
+    end;
 end;
 
 procedure TForm1.InitSlots;
@@ -330,19 +627,13 @@ begin
   end;
 end;
 
-procedure TForm1.FormMouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-begin
-  TreeView2.Update;
-end;
-
 procedure TForm1.GameInfoOptionClick(Sender: TObject);
 begin
   if (ViewGameInfo) then ViewGameInfo := False
   else ViewGameInfo := True;
   if (not ViewGameInfo) then PopupNotifier1.Visible:=False;
   GameInfoOption.Checked := ViewGameInfo;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewGameInfo,HomeName,TreeView2);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,HomeName,VST);
 end;
 
 procedure TForm1.LoadBtnClick(Sender: TObject);
@@ -350,17 +641,18 @@ var
   CheckedGames: String;
   ChkStringList: TStringList;
 begin
+  if (not LoadBtn.Focused) and (not GetKeyPressed(VK_MENU)) then exit;
   if (XMLEdit.Caption = '') or (not FileExists(XMLEdit.Caption)) then
     begin
       ShowMessage('Error: Supplied XML filename invalid.');
       exit;
     end;
   LastUsedXML := XMLEdit.Caption;
-  TreeView1.Items.Clear;
-  TreeView2.Items.Clear;
+  VST.Clear;
+  SVST.Clear;
   CheckedGames := GetSavedChecked(0);
-  XML2Tree(TreeView1,XMLEdit.Caption,False,HomeName);
-  XML2Tree(TreeView2,XMLEdit.Caption,True,HomeName);
+  XML2VTree(SVST,XMLEdit.Caption,False,HomeName);
+  XML2VTree(VST,XMLEdit.Caption,True,HomeName);
   try
     ChkStringList := TStringList.Create;
     ChkStringList.Clear;
@@ -368,24 +660,24 @@ begin
     ChkStringList.StrictDelimiter := True;
     ChkStringList.DelimitedText := CheckedGames;
     ChkStringList.Sort;
-    CheckNodesList(TreeView2,ChkStringList);
+    CheckVNodesList(VST,ChkStringList);
   finally
     ChkStringList.Free;
   end;
-  SelectionView(TreeView2,ViewSelected);
-  TreeView2.FullExpand;
-  PopulatePathData(TreeView2,GamesEdit.Caption);
-  PopulateFolderData(TreeView2,GamesEdit.Caption);
-  PopulateFolderData(TreeView1,GamesEdit.Caption);
-  PopulateShortcuts(TreeView2,GamesEdit.Caption);
-  TreeView2.AlphaSort;
-  if (TreeView2.Items.Count > 0) then
+  VST.FullExpand();
+  VShortcutsView(VST,ViewShortcuts);
+  VSelectionView(VST,ViewSelected);
+  VPopulatePathData(VST,GamesEdit.Caption);
+  VPopulateFolderData(VST,GamesEdit.Caption);
+  VPopulateFolderData(SVST,GamesEdit.Caption);
+  VPopulateShortcuts(VST,GamesEdit.Caption);
+  if (VST.GetFirst() <> nil) then
     case ViewStyle of
        0: Form1.FlatOptionClick(Self);
        1: Form1.ParentOptionClick(Self);
        2: Form1.ParentChildOptionClick(Self);
     end;
-  GetCheckCount(TreeView2, StatusBar1.Panels.Items[0], True);
+  VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
 end;
 
 procedure TForm1.MenuItem15Click(Sender: TObject);
@@ -396,7 +688,7 @@ begin
       ProgressBar.Position:=0;
       ProgressBar.Visible:= False;
       statusPanel1.Text:='';
-      GetCheckCount(TreeView2, StatusBar1.Panels.Items[0], True);
+      VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
     end;
 end;
 
@@ -441,10 +733,16 @@ begin
     GamesEdit.Enabled := True;
 end;
 
+function TForm1.GetKeyPressed(const VKeyCode: Integer): Boolean;
+begin
+  Result := GetKeyState(VKeyCode) and $80 <> 0;
+end;
+
 procedure TForm1.SaveBtnClick(Sender: TObject);
 var
   fname,LastFolder,NandPath: string;
 begin
+  if (not SaveBtn.Focused) and (not GetKeyPressed(VK_MENU)) then exit;
   if (LastUsedXML <> XMLEdit.Caption) then
     begin
       ShowMessage('Warning: New XML filename entered, please click load button first.');
@@ -470,7 +768,8 @@ begin
       else
         LastFavFolder := GenerateFolderName(LastFolder);
       statusPanel0.Text:='';
-      NANDCreateFaveLinks(TreeView2,ProgressBar,StatusBar1,LastFavFolder);
+    // To Do: Update NANDCreateFaveLinks for VST 4/21/2018
+    //  NANDCreateFaveLinks(TreeView2,ProgressBar,StatusBar1,LastFavFolder);
     end
   else
     begin
@@ -495,50 +794,77 @@ begin
             LastFavFolder := GenerateFolderName(GetLastFolderNumber(fname));
         end;
       statusPanel0.Text:='';
-      CreateFaveLinks(fname,TreeView2,ProgressBar,StatusBar1,LastFavFolder);
+      CreateFaveLinks(fname,VST,ProgressBar,StatusBar1,LastFavFolder);
     end;
   if (MessageDlg('Save','Completed.',mtInformation,[mbOk],0) = mrOk) then
     begin
       ProgressBar.Position:=0;
       ProgressBar.Visible:= False;
       statusPanel1.Text:='';
-      GetCheckCount(TreeView2, StatusBar1.Panels.Items[0], True);
-      SaveConfig(XMLEdit.Caption,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewGameInfo,HomeName,TreeView2);
+      VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
+      SaveConfig(XMLEdit.Caption,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,HomeName,VST);
     end;
 end;
 
 procedure TForm1.SelectedOptionClick(Sender: TObject);
 begin
   if (ViewSelected) then ViewSelected := False
-  else ViewSelected := True;
+  else
+    begin
+      ViewShortcuts := False;
+      ViewSelected := True;
+      ShortcutsOption.Checked := False;
+    end;
   SelectedOption.Checked := ViewSelected;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewGameInfo,HomeName,TreeView2);
-  SelectionView(TreeView2,ViewSelected);
-  TreeView2.AlphaSort;
-  if (TreeView2.Selected <> nil) and ((not ViewSelected) or (ViewSelected and NodeChecked(TreeView2.Selected))) then
-    TreeView2.Selected.MakeVisible
-  else if (TreeView2.Items.Count > 0) then
-    TreeView2.Items[0].MakeVisible;
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,HomeName,VST);
+  VST.BeginUpdate;
+  VSelectionView(VST,ViewSelected);
+  VST.EndUpdate;
+  if (VST.GetFirstSelected() <> nil) and ((not ViewSelected) or (ViewSelected and VNodeChecked(VST,VST.GetFirstSelected()))) then
+    VST.ScrollIntoView(VST.GetFirstSelected,False)
+  else if (VST.GetFirst <> nil) then
+    VST.ScrollIntoView(VST.GetFirstVisible(),False);
 end;
 
-procedure TForm1.TreeView1Compare(Sender: TObject; Node1, Node2: TTreeNode;
-  var Compare: Integer);
-var
-  GData1,GData2: TGameData;
+procedure TForm1.ShortcutsOptionClick(Sender: TObject);
 begin
-  Compare := 0;
-  GData1 := TGameData(Node1.Data);
-  GData2 := TGameData(Node2.Data);
-  if ((GData1.FType = 'Game') or (GData1.FType = 'Shortcut')) and (GData2.FType = 'Folder') then
-    Compare := -1
-  else if (GData1.FType = 'Folder') and ((GData2.FType = 'Game') or (GData2.FType = 'Shortcut')) then
-    Compare := 1
-  else if ((GData1.FType = 'Game') or (GData1.FType = 'Shortcut')) and ((GData2.Ftype = 'Game') or (GData2.FType = 'Shortcut')) then
-    Compare := CompareText(GData1.Name,GData2.Name);
+  if (ViewShortcuts) then ViewShortcuts := False
+  else
+    begin
+      ViewShortcuts := True;
+      ViewSelected := False;
+      SelectedOption.Checked := False;
+    end;
+  ShortcutsOption.Checked := ViewShortcuts;
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,HomeName,VST);
+  VST.BeginUpdate;
+  VShortcutsView(VST,ViewShortcuts);
+  VST.EndUpdate;
+  if (VST.GetFirstSelected() <> nil) and ((not ViewSelected) or (ViewSelected and VNodeChecked(VST,VST.GetFirstSelected()))) then
+    VST.ScrollIntoView(VST.GetFirstSelected,False)
+  else if (VST.GetFirst <> nil) then
+    VST.ScrollIntoView(VST.GetFirstVisible(),False);
 end;
 
-procedure TForm1.TreeView1CustomDrawItem(Sender: TCustomTreeView;
-  Node: TTreeNode; State: TCustomDrawState; var DefaultDraw: Boolean);
+procedure TForm1.SVSTCompareNodes(Sender: TBaseVirtualTree; Node1,
+  Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+var
+  GData1,GData2: PTreeData;
+begin
+  Result := 0;
+  GData1 := SVST.GetNodeData(Node1);
+  GData2 := SVST.GetNodeData(Node2);
+  if ((GData1^.FType = 'Game') or (GData1^.FType = 'Shortcut')) and (GData2^.FType = 'Folder') then
+    Result := -1
+  else if (GData1^.FType = 'Folder') and ((GData2^.FType = 'Game') or (GData2^.FType = 'Shortcut')) then
+    Result := 1
+  else if ((GData1^.FType = 'Game') or (GData1^.FType = 'Shortcut')) and ((GData2^.Ftype = 'Game') or (GData2^.FType = 'Shortcut')) then
+    Result := CompareText(GData1^.Name,GData2^.Name);
+end;
+
+procedure TForm1.SVSTDrawText(Sender: TBaseVirtualTree; TargetCanvas: TCanvas;
+  Node: PVirtualNode; Column: TColumnIndex; const CellText: String;
+  const CellRect: TRect; var DefaultDraw: Boolean);
 var
   NodeRect,TmRect: TRect;
   DisplayText: String;
@@ -546,62 +872,59 @@ var
   OldStyle: TFontStyles;
   b,c : Boolean;
   clOld: TColor;
-  GData: TGameData;
+  GData: PTreeData;
 begin
-  b := cdsSelected In State;
-  c := cdsFocused In State;
-  GData := TGameData(Node.Data);
-  if (GData.FType = 'Folder') then
+  with TVirtualStringTree(Sender) do
     begin
-      DefaultDraw := True;
-      exit;
+      b := Selected[Node];
+      c := (Node = FocusedNode);
+
+      GData := GetNodeData(Node);
+      if (GData^.FType = 'Folder') then
+        begin
+          DefaultDraw := True;
+          exit;
+        end;
+
+      with TargetCanvas do
+      begin
+        DefaultDraw := False;
+        NodeRect := CellRect;
+        clOld := Font.Color;
+        OldBrushStyle := Brush.Style;
+        OldStyle := Font.Style;
+
+        Brush.Style := bsSolid;
+        Brush.Color := clWhite;
+        TmRect := NodeRect;
+        TmRect.Left:=0;
+        TmRect.Right:=TVirtualStringTree(Sender).Width;
+        TmRect.Top:=TmRect.Top-2;
+        TmRect.Bottom:=TmRect.Bottom+2;
+        FillRect(TmRect);
+
+        Pen.Style := psClear;
+        Brush.Style := bsClear;
+        Pen.Color := clWhite;
+        if (c) then DrawFocusRect(NodeRect);
+
+        Brush.Color := Brush.Color;
+        FillRect(NodeRect);
+        Brush.Style := bsClear;
+        If b then Font.Style := [fsBold];
+        Font.Color := clBlue;
+
+        DisplayText := CellText;
+        TextOut(NodeRect.Left, NodeRect.Top, DisplayText);
+    //    TextRect(NodeRect, NodeRect.Left, NodeRect.Top, DisplayText);
+        Font.Color := clOld;
+        Brush.Style := OldBrushStyle;
+        Font.Style := OldStyle;
+      end;
     end;
-
-  with TTreeView(Sender).Canvas do
-  begin
-    DefaultDraw := False;
-    NodeRect := Node.DisplayRect(True);
-    clOld := Font.Color;
-    OldBrushStyle := Brush.Style;
-    OldStyle := Font.Style;
-
-    Brush.Style := bsSolid;
-    Brush.Color := clWhite;
-    TmRect := NodeRect;
-    TmRect.Left:=0;
-    TmRect.Right:=TTreeView(Sender).Width;
-    TmRect.Top:=TmRect.Top-2;
-    TmRect.Bottom:=TmRect.Bottom+2;
-    FillRect(TmRect);
-
-    Pen.Style := psClear;
-    Brush.Style := bsClear;
-    Pen.Color := clWhite;
-    if (c) then DrawFocusRect(NodeRect);
-
-    Brush.Color := Brush.Color;
-    FillRect(NodeRect);
-    Brush.Style := bsClear;
-    If b then Font.Style := [fsBold];
-    Font.Color := clBlue;
-
-    DisplayText := Node.Text;
-    TextOut(NodeRect.Left, NodeRect.Top, DisplayText);
-//    TextRect(NodeRect, NodeRect.Left, NodeRect.Top, DisplayText);
-    Font.Color := clOld;
-    Brush.Style := OldBrushStyle;
-    Font.Style := OldStyle;
-  end;
 end;
 
-procedure TForm1.TreeView1Deletion(Sender: TObject; Node: TTreeNode);
-begin
-// this will free the information even when clearing the treeview
-  if Node.Data <> nil then
-    TObject(Node.Data).Free;  // enough to cast to TObject because of virtual destructor
-end;
-
-procedure TForm1.TreeView1MouseDown(Sender: TObject; Button: TMouseButton;
+procedure TForm1.SVSTMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   if (Button = mbRight) then
@@ -628,15 +951,16 @@ begin
       ChkStringList.DelimitedText := CheckedGames;
       ChkStringList.Sort;
       ChkStringList.Sorted := True;
-      CheckNodesList(TreeView2,ChkStringList);
+      CheckVNodesList(VST,ChkStringList);
     finally
       ChkStringList.Free;
     end;
   finally
     Ini.Free;
   end;
-  SelectionView(TreeView2,ViewSelected);
-  GetCheckCount(TreeView2,StatusPanel0,True);
+  VShortcutsView(VST,ViewShortcuts);
+  VSelectionView(VST,ViewSelected);
+  VGetCheckCount(VST, StatusPanel0, True);
 end;
 
 procedure TForm1.DeleteSlotClick(Sender: TObject);
@@ -704,13 +1028,13 @@ begin
     GL := TStringList.Create;
     try
       CheckedGames := '';
-      GetCheckedCodes(TreeView2,GL);
+      VGetCheckedCodes(VST,GL);
       for i := 0 to (GL.Count-1) do
         begin
           CheckedGames := CheckedGames+' '+GL[i];
         end;
       CheckedGames := StringReplace(Trim(CheckedGames),' ',',',[rfReplaceAll]);
-      GetCheckedHashes(TreeView2,GL);
+      VGetCheckedHashes(VST,GL);
       for i := 0 to (GL.Count-1) do
         begin
           CheckedHashes := CheckedHashes+' '+GL[i];
@@ -724,57 +1048,12 @@ begin
   finally
     Ini.Free;
   end;
-  SelectionView(TreeView2,ViewSelected);
-  GetCheckCount(TreeView2,StatusPanel0,True);
+  VShortcutsView(VST,ViewShortcuts);
+  VSelectionView(VST,ViewSelected);
+  VGetCheckCount(VST, StatusPanel0, True);
 end;
 
-procedure TForm1.ToggleCheck(node: TTreeNode);
-var
-  checked: integer;
-begin
-  ToggleTreeViewCheckBoxes(node);
-
-  checked := GetCheckCount(TreeView2,StatusPanel0,False);
-  if NodeChecked(node) then
-    begin
-      if (checked > 30) then
-        begin
-          ToggleTreeViewCheckBoxes(node);
-          Dec(checked);
-          MessageDlg('Error','Maximum of 30 favorites allowed.',mtError,[mbOk],0);
-        end;
-    end
-  else if ViewSelected then
-    begin
-      SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewGameInfo,HomeName,TreeView2);
-    end;
-  checked := GetCheckCount(TreeView2,StatusPanel0,True);
-end;
-
-procedure TForm1.TreeView2Click(Sender: TObject);
-var
-  P: TPoint;
-  node: TTreeNode;
-  ht: THitTests;
-begin
-  P := TPoint.Create(0,0);
-  GetCursorPos(P);
-  P := TreeView2.ScreenToClient(P);
-  ht := TreeView2.GetHitTestInfoAt(P.X, P.Y);
-  if (htOnStateIcon in ht) then
-    begin
-      node := TreeView2.GetNodeAt(P.X, P.Y);
-      ToggleCheck(node);
-    end;
-end;
-
-procedure TForm1.TreeView2CustomDrawItem(Sender: TCustomTreeView;
-  Node: TTreeNode; State: TCustomDrawState; var DefaultDraw: Boolean);
-begin
-  TreeViewDrawItem(Sender,Node,State,ImageList1,DefaultDraw);
-end;
-
-procedure TForm1.TreeView2KeyDown(Sender: TObject; var Key: Word;
+{ procedure TForm1.TreeView2KeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
   CurNode,fNode: TTreeNode;
@@ -794,245 +1073,18 @@ begin
       fNode.MakeVisible;
       Key := 0;
     end;
-end;
-
-procedure TForm1.TreeView2MouseDown(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-begin
-  if (Button = mbRight) then
-   MouseInput.Click(mbLeft,[]);
-end;
-
-procedure TForm1.TreeView2MouseLeave(Sender: TObject);
-begin
-  if PopupNotifier1.Visible then
-   begin
-     PopupNotifier1.Text:='';
-     PopupNotifier1.Hide;
-   end;
-end;
-
-procedure TForm1.TreeView2MouseMove(Sender: TObject; Shift: TShiftState; X,
-  Y: Integer);
-var
-  node: TTreeNode;
-  GData: TGameData;
-  X1,Y1: Integer;
-  OControl: TWinControl;
-  DisplayText,MPath: String;
-  Flush: Boolean;
-begin
-  if (TreeView2.Items.Count = 0) then exit;
-  Flush := False;
-  node := TreeView2.GetNodeAt(X, Y);
-  if (node = nil) then
-   begin
-     PopupNotifier1.Text:='';
-     PopupNotifier1.Hide;
-     exit;
-   end;
-  GData := TGameData(node.Data);
-  if (ViewGameInfo) and (GData.FType = 'Game') and (GData.BelongsTo <> nil) then
-    begin
-      OControl := Form1.ActiveControl;
-      Y1 := TreeView2.ClientOrigin.y;
-      X1 := TreeView2.ClientOrigin.x+TreeView2.Width+5;
-      if (PopupNotifier1.vNotifierForm.Color <> clSkyBlue) then
-        Flush := True;
-      PopupNotifier1.vNotifierForm.Color := clSkyBlue;
-      PopupNotifier1.vNotifierForm.htmlColor := clSkyBlue;
-      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clSkyBlue);
-      if (not PopupNotifier1.Visible) then
-        PopupNotifier1.ShowAtPos(X1,Y1);
-      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Game:</b></td><td align="left">'+node.text+'</td><tr><td align="left">'+'<b>Game Code:</b></td><td align="left">'+GData.Code+'</td></tr><tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+GData.BelongsTo.Text+'</td></tr>';
-      if (GData.TopParent <> nil) then
-       DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+GData.TopParent.Text+'</td></tr>';
-      DisplayText:=DisplayText+'</table>';
-      if (Flush) then
-       begin
-         PopupNotifier1.Text:='';
-         PopupNotifier1.vNotifierForm.Repaint;
-       end;
-      PopupNotifier1.Text:=DisplayText;
-      OControl.SetFocus;
-    end
-  else if (ViewGameInfo) and (GData.FType = 'Shortcut') and (GData.BelongsTo <> nil) then
-    begin
-      OControl := Form1.ActiveControl;
-      Y1 := TreeView2.ClientOrigin.y;
-      X1 := TreeView2.ClientOrigin.x+TreeView2.Width+5;
-      if (PopupNotifier1.vNotifierForm.Color <> clFuchsia) then
-        Flush := True;
-      PopupNotifier1.vNotifierForm.Color := clFuchsia;
-      PopupNotifier1.vNotifierForm.htmlColor := clFuchsia;
-      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clFuchsia);
-      if (not PopupNotifier1.Visible) then
-        PopupNotifier1.ShowAtPos(X1,Y1);
-      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Game:</b></td><td align="left">'+node.text+'</td><tr><td align="left">'+'<b>Game Code:</b></td><td align="left">'+GData.Code+'</td></tr><tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+GData.BelongsTo.Text+'</td></tr>';
-      if (GData.TopParent <> nil) then
-       DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+GData.TopParent.Text+'</td></tr>';
-      DisplayText:=DisplayText+'</table>';
-      if (Flush) then
-       begin
-         PopupNotifier1.Text:='';
-         PopupNotifier1.vNotifierForm.Repaint;
-       end;
-      PopupNotifier1.Text:=DisplayText;
-      OControl.SetFocus;
-    end
-  else if (ViewGameInfo) and (GData.FType = 'Folder') then
-    begin
-      MPath := ExtractFileDir(XMLEdit.Caption);
-      MPath := ExtractFilePath(MPath);
-      MPath := MPath+'folder_images';
-      OControl := Form1.ActiveControl;
-      Y1 := TreeView2.ClientOrigin.y;
-      X1 := TreeView2.ClientOrigin.x+TreeView2.Width+5;
-      if (PopupNotifier1.vNotifierForm.Color <> clSkyBlue) then
-        Flush := True;
-      PopupNotifier1.vNotifierForm.Color := clSkyBlue;
-      PopupNotifier1.vNotifierForm.htmlColor := clSkyBlue;
-      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clSkyBlue);
-      if (not PopupNotifier1.Visible) then
-        PopupNotifier1.ShowAtPos(X1,Y1);
-      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Folder:</b></td><td align="left">'+node.text+'</td>';
-      if (GData.BelongsTo <> nil) then
-        DisplayText:=DisplayText+'<tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+GData.BelongsTo.Text+'</td></tr>';
-      if (GData.TopParent <> nil) then
-        DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+GData.TopParent.Text+'</td></tr>';
-      if (GData.Icon <> '') and (FileExists(MPath+'\'+GData.Icon+'.png')) then
-        begin
-          DisplayText:=DisplayText+'<tr><td align="center" colspan="2"><br/><img height="50" width="50" src="'+GData.Icon+'.png" /></td></tr>';
-        end;
-      DisplayText:=DisplayText+'</table>';
-      if (Flush) then
-       begin
-         PopupNotifier1.Text:='';
-         PopupNotifier1.vNotifierForm.Repaint;
-       end;
-      PopupNotifier1.Text:=DisplayText;
-      OControl.SetFocus;
-    end;
-end;
-
-procedure TForm1.TreeView2MouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-begin
-  TreeView2.Repaint;
-end;
-
-procedure TForm1.TreeView2SelectionChanged(Sender: TObject);
-var
-  node: TTreeNode;
-  GData: TGameData;
-  X1,Y1: Integer;
-  OControl: TWinControl;
-  MPath,DisplayText: String;
-  Flush: Boolean;
-begin
-  node := TreeView2.Selected;
-  if (node = nil) then
-    begin
-      PopupNotifier1.Text:='';
-      PopupNotifier1.Hide;
-      exit;
-    end;
-  Flush := False;
-  GData := TGameData(node.Data);
-  if (ViewGameInfo) and (GData.FType = 'Game') and (GData.BelongsTo <> nil) then
-    begin
-      OControl := Form1.ActiveControl;
-      Y1 := TreeView2.ClientOrigin.y;
-      X1 := TreeView2.ClientOrigin.x+TreeView2.Width+5;
-      if (PopupNotifier1.vNotifierForm.Color <> clSkyBlue) then
-        Flush := True;
-      PopupNotifier1.vNotifierForm.Color := clSkyBlue;
-      PopupNotifier1.vNotifierForm.htmlColor := clSkyBlue;
-      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clSkyBlue);
-      if (not PopupNotifier1.Visible) then
-        PopupNotifier1.ShowAtPos(X1,Y1);
-      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Game:</b></td><td align="left">'+node.text+'</td><tr><td align="left">'+'<b>Game Code:</b></td><td align="left">'+GData.Code+'</td></tr><tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+GData.BelongsTo.Text+'</td></tr>';
-      if (GData.TopParent <> nil) then
-       DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+GData.TopParent.Text+'</td></tr>';
-      DisplayText:=DisplayText+'</table>';
-      if (Flush) then
-       begin
-         PopupNotifier1.Text:='';
-         PopupNotifier1.vNotifierForm.Repaint;
-       end;
-      PopupNotifier1.Text:=DisplayText;
-      OControl.SetFocus;
-    end
-  else if (ViewGameInfo) and (GData.FType = 'Shortcut') and (GData.BelongsTo <> nil) then
-    begin
-      OControl := Form1.ActiveControl;
-      Y1 := TreeView2.ClientOrigin.y;
-      X1 := TreeView2.ClientOrigin.x+TreeView2.Width+5;
-      if (PopupNotifier1.vNotifierForm.Color <> clFuchsia) then
-        Flush := True;
-      PopupNotifier1.vNotifierForm.Color := clFuchsia;
-      PopupNotifier1.vNotifierForm.htmlColor := clFuchsia;
-      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clFuchsia);
-      if (not PopupNotifier1.Visible) then
-        PopupNotifier1.ShowAtPos(X1,Y1);
-      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Game:</b></td><td align="left">'+node.text+'</td><tr><td align="left">'+'<b>Game Code:</b></td><td align="left">'+GData.Code+'</td></tr><tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+GData.BelongsTo.Text+'</td></tr>';
-      if (GData.TopParent <> nil) then
-       DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+GData.TopParent.Text+'</td></tr>';
-      DisplayText:=DisplayText+'</table>';
-      if (Flush) then
-       begin
-         PopupNotifier1.Text:='';
-         PopupNotifier1.vNotifierForm.Repaint;
-       end;
-      PopupNotifier1.Text:=DisplayText;
-      OControl.SetFocus;
-    end
-  else if (ViewGameInfo) and (GData.FType = 'Folder') then
-    begin
-      MPath := ExtractFileDir(XMLEdit.Caption);
-      MPath := ExtractFilePath(MPath);
-      MPath := MPath+'folder_images';
-      OControl := Form1.ActiveControl;
-      Y1 := TreeView2.ClientOrigin.y;
-      X1 := TreeView2.ClientOrigin.x+TreeView2.Width+5;
-      if (PopupNotifier1.vNotifierForm.Color <> clSkyBlue) then
-        Flush := True;
-      PopupNotifier1.vNotifierForm.Color := clSkyBlue;
-      PopupNotifier1.vNotifierForm.htmlColor := clSkyBlue;
-      PopupNotifier1.vNotifierForm.htmlhexColor := TColorToHex(clSkyBlue);
-      if (not PopupNotifier1.Visible) then
-        PopupNotifier1.ShowAtPos(X1,Y1);
-      DisplayText:='<table width="93%"><tr><td align="left" width="40%"><b>Folder:</b></td><td align="left">'+node.text+'</td>';
-      if (GData.BelongsTo <> nil) then
-        DisplayText:=DisplayText+'<tr><td align="left">'+'<b>Parent Folder:</b></td><td align="left">'+GData.BelongsTo.Text+'</td></tr>';
-      if (GData.TopParent <> nil) then
-       DisplayText:=DisplayText+'<tr><td align="left"><b>Top Folder:</b></td><td align="left">'+GData.TopParent.Text+'</td></tr>';
-      if (GData.Icon <> '') and (FileExists(MPath+'\'+GData.Icon+'.png')) then
-        begin
-          DisplayText:=DisplayText+'<tr><td align="center" colspan="2"><br/><img height="50" width="50" src="'+GData.Icon+'.png" /></td></tr>';
-        end;
-      DisplayText:=DisplayText+'</table>';
-      if (Flush) then
-       begin
-         PopupNotifier1.Text:='';
-         PopupNotifier1.vNotifierForm.Repaint;
-       end;
-      PopupNotifier1.Text:=DisplayText;
-      OControl.SetFocus;
-    end;
-  TreeView2.SetFocus;
-end;
+end; }
 
 procedure TForm1.ClearShcBtnClick(Sender: TObject);
 begin
-  ClearShortcuts(TreeView1);
-  TreeView1.Refresh;
+  if (not ClearShcBtn.Focused) and (not GetKeyPressed(VK_MENU)) then exit;
+  VClearShortcuts(SVST);
+  SVST.Refresh;
 end;
 
 procedure TForm1.AddShortCutsBtnClick(Sender: TObject);
 begin
-  AddShortcutSelections(TreeView2,TreeView1);
-  TreeView1.AlphaSort;
+  VAddShortcutSelections(VST,SVST);
 end;
 
 procedure TForm1.AddPresetOptionClick(Sender: TObject);
@@ -1102,7 +1154,7 @@ begin
         ProgressBar.Position:=0;
         ProgressBar.Visible:= False;
         statusPanel1.Text:='';
-        GetCheckCount(TreeView2, StatusBar1.Panels.Items[0], True);
+        VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
       end;
     end;
 end;
@@ -1110,16 +1162,17 @@ end;
 procedure TForm1.CreateFolderMnuClick(Sender: TObject);
 var
   NewName,FName,LFName,FPath,MPath,ConsolePath: String;
-  Node,nNode,nNode2,pNode,fNode,lNode,lNode2: TTreeNode;
-  GData,GData2,GData3: TGameData;
+  Node,nNode,nNode2,pNode,fNode,lNode,lNode2: PVirtualNode;
+  GData,GData2,GData3: PTreeData;
   DeskFile: TStringList;
 begin
-  Node := TreeView1.Selected;
+  Node := SVST.GetFirstSelected();
   if (Node = nil) then exit;
   ConsolePath := GamesEdit.Caption;
   FPath := ExtractFilePath(ParamStr(0));
-  GData := TGameData(Node.Data);
-  FName := GetLastFolderNumber(GData.FilePath+'\',True);
+  GData := SVST.GetNodeData(Node);
+  FName := GetLastFolderNumber(GData^.FilePath+'\',True);
+  if (FName = '') then exit;
   Fname := GenerateFolderName(FName,True);
   if (ConsolePath[Length(ConsolePath)] <> '\') then
     ConsolePath := ConsolePath+'\';
@@ -1134,21 +1187,17 @@ begin
     begin
       if (FileExists(PngSelectDlg.FileName)) then
         begin
-          if (Node = TreeView1.Items[0]) then
-            GData2 := CreateGameData(NewName,'Folder',nil,'','')
-          else
-            GData2 := CreateGameData(NewName,'Folder',Node,'','');
-          GData2.Icon := GData2.Hash;
-          if (Node = TreeView1.Items[0]) then pNode := nil
+          if (Node = SVST.GetFirst()) then pNode := nil
           else pNode := Node;
-          nNode := TreeView1.Items.AddChild(pNode,NewName);
-          if (GData2.TopParent = nil) then GData2.TopParent := nNode;
+          nNode := SVST.AddChild(pNode);
+          GData2 := SetNodeData(SVST,nNode,NewName,'Folder','','','','',pNode,nil);
+          GData2^.Icon := GData2^.Hash;
+          if (GData2^.TopParent = nil) then GData2^.TopParent := nNode;
           LFName := GetLastFolderNumber(ConsolePath);
           LFName := GenerateFolderName(LFName);
-          GData2.FilePath := ConsolePath+LFName;
-          nNode.Data := GData2;
-          CreateDir(GData2.FilePath);
-          CreateDir(GData.FilePath+'\CLV-S-00'+LFName);
+          GData2^.FilePath := ConsolePath+LFName;
+          CreateDir(GData2^.FilePath);
+          CreateDir(GData^.FilePath+'\CLV-S-00'+LFName);
 
         // LFName = 00x
         // FName = CLV-S-00xxx of subfolder
@@ -1175,59 +1224,52 @@ begin
             DeskFile.Add('SortRawPublisher=ZZZZZZZZZX');
             DeskFile.Add('Copyright=hakchi2 ©2017 Alexey ''Cluster'' Avdyukhin');
 
-            DeskFile.SaveToFile(GData.FilePath+'\CLV-S-00'+LFName+'\CLV-S-00'+LFName+'.desktop');
+            DeskFile.SaveToFile(GData^.FilePath+'\CLV-S-00'+LFName+'\CLV-S-00'+LFName+'.desktop');
           finally
             DeskFile.Free;
           end;
 
-          CreateDir(GData2.FilePath+'\CLV-S-00000');
-          CopyFile(ConsolePath+'001\CLV-S-00000\CLV-S-00000.desktop',GData2.FilePath+'\CLV-S-00000\CLV-S-00000.desktop');
-          CopyFile(ConsolePath+'001\CLV-S-00000\CLV-S-00000.png',GData2.FilePath+'\CLV-S-00000\CLV-S-00000.png');
-          CopyFile(ConsolePath+'001\CLV-S-00000\CLV-S-00000_small.png',GData2.FilePath+'\CLV-S-00000\CLV-S-00000_small.png');
+          CreateDir(GData2^.FilePath+'\CLV-S-00000');
+          CopyFile(ConsolePath+'001\CLV-S-00000\CLV-S-00000.desktop',GData2^.FilePath+'\CLV-S-00000\CLV-S-00000.desktop');
+          CopyFile(ConsolePath+'001\CLV-S-00000\CLV-S-00000.png',GData2^.FilePath+'\CLV-S-00000\CLV-S-00000.png');
+          CopyFile(ConsolePath+'001\CLV-S-00000\CLV-S-00000_small.png',GData2^.FilePath+'\CLV-S-00000\CLV-S-00000_small.png');
+          SVST.ScrollIntoView(nNode,False);
 
-          TreeView1.AlphaSort;
-          nNode.MakeVisible;
-
-          lNode := TreeView2.Items[0];
+          lNode := VST.GetFirst();
           while (lNode <> nil) do
             begin
-              lNode2 := lNode.GetNextSibling;
+              lNode2 := VST.GetNextSibling(lNode);
               fNode := nil;
-              fNode := FindNodeData(TreeView2,lNode,GData.Hash,5);
+              fNode := FindVNodeData(VST,lNode,GData^.Hash,5);
               if (fNode <> nil) then
                 begin
                   lNode2 := nil;
-                  if (fNode = TreeView2.Items[0]) then pNode := nil
+                  if (fNode = VST.GetFirst()) then pNode := nil
                   else pNode := fNode;
 
-                  GData3 := CreateGameData(GData2.Name,GData2.FType,pNode,
-                            GData2.Icon,GData2.Code);
-                  nNode2 := TreeView2.Items.AddChild(pNode,NewName);
-                  nNode2.Data := GData3;
-                  GData3.FilePath := ConsolePath+LFName;
-                  if (GData3.TopParent = nil) then GData3.TopParent := nNode2;
-
-                  TreeView2.AlphaSort;
-                  nNode2.MakeVisible;
+                  nNode2 := VST.AddChild(pNode);
+                  GData3 := SetNodeData(VST,nNode2,GData2^.Name,GData2^.FType,
+                            ConsolePath+LFName,GData2^.Code,'',GData2^.Icon,pNode,nil);
+                  if (GData3^.TopParent = nil) then GData3^.TopParent := nNode2;
+                  VST.ScrollIntoView(nNode2,False);
                 end;
               lNode := lNode2;
             end;
-          TreeView2.Invalidate;
-          Form1.Invalidate;
+          VST.Refresh;
+          SVST.Refresh;
 
-
-          ResizeImage(PngSelectDlg.FileName,FPath+GData2.Hash+'.png', 204, 204);
-          ResizeImage(PngSelectDlg.FileName,FPath+GData2.Hash+'_small.png', 40, 40);
-          CopyFile(FPath+GData2.Hash+'.png',GData.FilePath+'\CLV-S-00'+LFName+'\CLV-S-00'+LFName+'.png');
-          CopyFile(FPath+GData2.Hash+'_small.png',GData.FilePath+'\CLV-S-00'+LFName+'\CLV-S-00'+LFName+'_small.png');
+          ResizeImage(PngSelectDlg.FileName,FPath+GData2^.Hash+'.png', 204, 204);
+          ResizeImage(PngSelectDlg.FileName,FPath+GData2^.Hash+'_small.png', 40, 40);
+          CopyFile(FPath+GData2^.Hash+'.png',GData^.FilePath+'\CLV-S-00'+LFName+'\CLV-S-00'+LFName+'.png');
+          CopyFile(FPath+GData2^.Hash+'_small.png',GData^.FilePath+'\CLV-S-00'+LFName+'\CLV-S-00'+LFName+'_small.png');
 
           MPath := ExtractFileDir(XMLEdit.Caption);
           MPath := ExtractFilePath(MPath);
           MPath := MPath+'folder_images';
           if (DirectoryExists(MPath)) then
-            CopyFile(FPath+GData2.Hash+'.png',MPath+'\'+GData2.Hash+'.png');
-          DeleteFile(FPath+GData2.Hash+'.png');
-          DeleteFile(FPath+GData2.Hash+'_small.png');
+            CopyFile(FPath+GData2^.Hash+'.png',MPath+'\'+GData2^.Hash+'.png');
+          DeleteFile(FPath+GData2^.Hash+'.png');
+          DeleteFile(FPath+GData2^.Hash+'_small.png');
           if (FileExists(XMLEdit.Caption)) then
             begin
               MPath := ExtractFilePath(XMLEdit.Caption);
@@ -1235,7 +1277,7 @@ begin
                 DeleteFile(MPath+'folders_snes.bak');
               CopyFile(XMLEdit.Caption,MPath+'folders_snes.bak');
             end;
-          TreeToXML(TreeView2,XMLEdit.Caption);
+          VTreeToXML(VST,XMLEdit.Caption);
         end;
     end;
 end;
@@ -1258,39 +1300,39 @@ begin
         ProgressBar.Position:=0;
         ProgressBar.Visible:= False;
         statusPanel1.Text:='';
-        GetCheckCount(TreeView2, StatusBar1.Panels.Items[0], True);
+        VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
       end;
     end;
 end;
 
 procedure TForm1.ExplorerOpen1Click(Sender: TObject);
 var
-  Node: TTreeNode;
-  GData: TGameData;
+  Node: PVirtualNode;
+  GData: PTreeData;
 begin
-  Node := TreeView2.Selected;
-  GData := TGameData(Node.Data);
-  if (GData.FilePath <> '') then
-    SysUtils.ExecuteProcess('explorer.exe', GData.FilePath, []);
+  Node := VST.GetFirstSelected();
+  GData := VST.GetNodeData(Node);
+  if (GData^.FilePath <> '') then
+    SysUtils.ExecuteProcess('explorer.exe', GData^.FilePath, []);
 end;
 
 procedure TForm1.MenuItem18Click(Sender: TObject);
 begin
-  DeleteShortcuts(TreeView2);
-  GetCheckCount(TreeView2, StatusBar1.Panels.Items[0], True);
+  DeleteShortcuts(VST);
+  VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
 end;
 
 procedure TForm1.MenuItem19Click(Sender: TObject);
 begin
-  DeleteShortcuts(TreeView2, True);
-  GetCheckCount(TreeView2, StatusBar1.Panels.Items[0], True);
+  DeleteShortcuts(VST, True);
+  VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
 end;
 
 procedure TForm1.PopupMenu1Popup(Sender: TObject);
 var
-  CurNode: TTreeNode;
+  CurNode: PVirtualNode;
 begin
-  CurNode := TreeView1.Selected;
+  CurNode := SVST.GetFirstSelected();
   if (CurNode = nil) then abort;
 end;
 
@@ -1298,6 +1340,7 @@ procedure TForm1.SaveShcBtnClick(Sender: TObject);
 var
   fname: String;
 begin
+  if (not SaveShcBtn.Focused) and (not GetKeyPressed(VK_MENU)) then exit;
   if (LastUsedXML <> XMLEdit.Caption) then
     begin
       ShowMessage('Warning: New XML filename entered, please click load button first.');
@@ -1311,36 +1354,33 @@ begin
       exit;
     end;
   statusPanel0.Text:='';
-  SaveShortcuts(Treeview1,GamesEdit.Caption,ProgressBar,StatusBar1);
-
+  SaveShortcuts(SVST,GamesEdit.Caption,ProgressBar,StatusBar1);
   if (MessageDlg('Save','Completed.'+#13#10+#13#10+'To remove shortcuts, you will need to re-export your games from hakchi, or choose "Delete all shortcuts" from the Tools menu.',mtInformation,[mbOk],0) = mrOk) then
   begin
     ProgressBar.Position:=0;
     ProgressBar.Visible:= False;
     statusPanel1.Text:='';
-    PopulateShortcuts(TreeView2,GamesEdit.Caption);
-    TreeView2.BeginUpdate;
-    if (TreeView2.Items.Count > 0) and (ViewStyle = 0) then
-      MoveChildrenToTop(TreeView2)
-    else if (TreeView2.Items.Count > 0) and (ViewStyle = 1) then
-      MoveChildrenToTopParent(TreeView2)
-    else if (TreeView2.Items.Count > 0) and (ViewStyle = 2) then
-      MoveChildrenToParent(TreeView2);
-    TreeView2.FullExpand;
-    TreeView2.AlphaSort;
-    if (TreeView2.Selected <> nil) and ((not ViewSelected) or (ViewSelected and NodeChecked(TreeView2.Selected))) then
-     TreeView2.Selected.MakeVisible
-    else if (TreeView2.Items.Count > 0) then
-     TreeView2.Items[0].MakeVisible;
-    TreeView2.EndUpdate;
-    GetCheckCount(TreeView2, StatusBar1.Panels.Items[0], True);
+    VPopulateShortcuts(VST,GamesEdit.Caption);
+    if (VST.GetFirst() <> nil) and (ViewStyle = 0) then
+      VMoveChildrenToTop(VST)
+    else if (VST.GetFirst() <> nil) and (ViewStyle = 1) then
+      VMoveChildrenToTopParent(VST)
+    else if (VST.GetFirst() <> nil) and (ViewStyle = 2) then
+      VMoveChildrenToParent(VST);
+    VST.FullExpand();
+    if (VST.GetFirstSelected() <> nil) and ((not ViewSelected) or (ViewSelected and VNodeChecked(VST,VST.GetFirstSelected()))) then
+      VST.ScrollIntoView(VST.GetFirstSelected,False)
+    else if (VST.GetFirst <> nil) then
+      VST.ScrollIntoView(VST.GetFirstVisible(),False);
+    VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
   end;
 end;
 
 procedure TForm1.ClearBtnClick(Sender: TObject);
 begin
-  ClearSelections(TreeView2);
-  GetCheckCount(TreeView2, StatusPanel0, True);
+  if (not ClearBtn.Focused) and (not GetKeyPressed(VK_MENU)) then exit;
+  VClearSelections(VST);
+  VGetCheckCount(VST, StatusPanel0, True);
 end;
 
 procedure TForm1.FlatOptionClick(Sender: TObject);
@@ -1349,17 +1389,19 @@ begin
   FlatOption.Checked:=True;
   ParentOption.Checked:=False;
   ParentChildOption.Checked:=False;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewGameInfo,HomeName,TreeView2);
-  if (TreeView2.Items.Count > 0) then
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,HomeName,VST);
+  if (VST.GetFirst() <> nil) then
     begin
-      TreeView2.BeginUpdate;
-      MoveChildrenToTop(TreeView2);
-      TreeView2.AlphaSort;
-      if (TreeView2.Selected <> nil) and ((not ViewSelected) or (ViewSelected and NodeChecked(TreeView2.Selected))) then
-       TreeView2.Selected.MakeVisible
-      else if (TreeView2.Items.Count > 0) then
-       TreeView2.Items[0].MakeVisible;
-      TreeView2.EndUpdate;
+      VST.BeginUpdate;
+      VMoveChildrenToTop(VST);
+      VST.FullCollapse();
+      VST.FullExpand();
+      VST.EndUpdate;
+      if (VST.GetFirstSelected() <> nil) and ((not ViewSelected) or (ViewSelected and VNodeChecked(VST,VST.GetFirstSelected()))) then
+        VST.ScrollIntoView(VST.GetFirstSelected,False)
+      else if (VST.GetFirst <> nil) then
+        VST.ScrollIntoView(VST.GetFirstVisible(),False);
+      VST.Refresh;
     end;
 end;
 
@@ -1369,17 +1411,20 @@ begin
   FlatOption.Checked:=False;
   ParentOption.Checked:=True;
   ParentChildOption.Checked:=False;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewGameInfo,HomeName,TreeView2);
-  if (TreeView2.Items.Count > 0) then
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,HomeName,VST);
+  if (VST.GetFirst() <> nil) then
     begin
-      TreeView2.BeginUpdate;
-      MoveChildrenToTopParent(TreeView2);
-      TreeView2.FullExpand;
-      if (TreeView2.Selected <> nil) and ((not ViewSelected) or (ViewSelected and NodeChecked(TreeView2.Selected))) then
-       TreeView2.Selected.MakeVisible
-      else if (TreeView2.Items.Count > 0) then
-       TreeView2.Items[0].MakeVisible;
-      TreeView2.EndUpdate;
+      VST.BeginUpdate;
+      VMoveChildrenToTopParent(VST);
+      VST.FullExpand();
+      VST.FullCollapse();
+      VST.FullExpand();
+      VST.EndUpdate;
+      if (VST.GetFirstSelected() <> nil) and ((not ViewSelected) or (ViewSelected and VNodeChecked(VST,VST.GetFirstSelected()))) then
+        VST.ScrollIntoView(VST.GetFirstSelected,False)
+      else if (VST.GetFirst <> nil) then
+        VST.ScrollIntoView(VST.GetFirstVisible(),False);
+      VST.Refresh;
     end;
 end;
 
@@ -1389,31 +1434,34 @@ begin
   FlatOption.Checked:=False;
   ParentOption.Checked:=False;
   ParentChildOption.Checked:=True;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewGameInfo,HomeName,TreeView2);
-  if (TreeView2.Items.Count > 0) then
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,HomeName,VST);
+  if (VST.GetFirst() <> nil) then
     begin
-      TreeView2.BeginUpdate;
-      MoveChildrenToParent(TreeView2);
-      TreeView2.FullExpand;
-      if (TreeView2.Selected <> nil) and ((not ViewSelected) or (ViewSelected and NodeChecked(TreeView2.Selected))) then
-       TreeView2.Selected.MakeVisible
-      else if (TreeView2.Items.Count > 0) then
-       TreeView2.Items[0].MakeVisible;
-      TreeView2.EndUpdate;
+      VST.BeginUpdate;
+      VMoveChildrenToParent(VST);
+      VST.FullExpand();
+      VST.FullCollapse();
+      VST.FullExpand();
+      VST.EndUpdate;
+      if (VST.GetFirstSelected() <> nil) and ((not ViewSelected) or (ViewSelected and VNodeChecked(VST,VST.GetFirstSelected()))) then
+        VST.ScrollIntoView(VST.GetFirstSelected,False)
+      else if (VST.GetFirst <> nil) then
+        VST.ScrollIntoView(VST.GetFirstVisible(),False);
+      VST.Refresh;
     end;
 end;
 
 procedure TForm1.PopupMenu2Popup(Sender: TObject);
 var
   Code: String;
-  GData: TGameData;
-  CurNode: TTreeNode;
+  GData: PTreeData;
+  CurNode: PVirtualNode;
 begin
-  CurNode := TreeView2.Selected;
-  GData := TGameData(CurNode.Data);
-  Code := GData.Code;
-  if (Code <> 'HOME') and (GData.FilePath = '') then abort;
-  if (GData.FilePath <> '') then ExplorerOpen1.Visible := True
+  CurNode := VST.GetFirstSelected();
+  GData := VST.GetNodeData(CurNode);
+  Code := GData^.Code;
+  if (Code <> 'HOME') and (GData^.FilePath = '') then abort;
+  if (GData^.FilePath <> '') then ExplorerOpen1.Visible := True
   else ExplorerOpen1.Visible := False;
   if (Code = 'HOME') then RenameHome1.Visible := True
   else RenameHome1.Visible := False;
@@ -1422,32 +1470,30 @@ end;
 procedure TForm1.RenameHomeClick(Sender: TObject);
 var
   NewName: String;
-  GData: TGameData;
+  GData: PTreeData;
 begin
   NewName := Trim(InputBox('Rename Home Folder','Please enter a name for this folder',''));
   if (NewName = '') then exit;
   if (Length(NewName) > 15) then NewName := Copy(NewName,1,15);
   HomeName := NewName;
-  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewGameInfo,HomeName,TreeView2);
-  if (TreeView2.Items.Count > 0) then
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,HomeName,VST);
+  if (VST.GetFirst() <> nil) then
     begin
-      GData := TGameData(TreeView2.Items[0].Data);
-      GData.Name := HomeName;
-      TreeView2.Items[0].Data := GData;
-      TreeView2.Items[0].Text := HomeName;
+      GData := VST.GetNodeData(VST.GetFirst());
+      GData^.Name := HomeName;
+      VST.Refresh;
     end;
-  if (TreeView1.Items.Count > 0) then
+  if (SVST.GetFirst() <> nil) then
     begin
-      GData := TGameData(TreeView1.Items[0].Data);
-      GData.Name := HomeName;
-      TreeView1.Items[0].Data := GData;
-      TreeView1.Items[0].Text := HomeName;
+      GData := SVST.GetNodeData(SVST.GetFirst());
+      GData^.Name := HomeName;
+      SVST.Refresh;
     end;
 end;
 
 procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
-  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewGameInfo,HomeName,TreeView2);
+  SaveConfig(LastUsedXML,GamesEdit.Caption,NANDCheckBox.Checked,LastFavFolder,ViewStyle,ViewSelected,ViewShortcuts,ViewGameInfo,HomeName,VST);
 end;
 
 end.

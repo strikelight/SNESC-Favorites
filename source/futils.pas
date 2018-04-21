@@ -25,71 +25,71 @@ unit futils;
 interface
 
 uses
-  Classes, SysUtils, RegExpr, Dialogs, FileUtil, ComCtrls, Forms,
+  Classes, SysUtils, RegExpr, Dialogs, FileUtil, ComCtrls, Forms, VirtualTrees,
   ui_utils;
 
 function GetLastFolderNumber(Path: String; SubFolder: Boolean = False):String;
 function GenerateFolderName(Number: String; SubFolder: Boolean = False):String;
-function CreateFaveLinks(ConsolePath: String; GamesList: TTreeView; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
+function CreateFaveLinks(ConsolePath: String; GamesList: TVirtualStringTree; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
 function IsGameChecked(CheckedGames:String; GameCode:String):Boolean;
-function SaveShortcuts(Tree: TTreeView; Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
+function SaveShortcuts(Tree: TVirtualStringTree; Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
 function FindTextInFiles(TxtMatch: String; FileMatch: String; Path: String; var ResList: TStringList):Boolean;
-procedure DeleteShortcuts(Tree: TTreeView; SelectedOnly: Boolean = False);
-procedure TreeToXML(Tree: TTreeView; Filename: String);
+procedure DeleteShortcuts(Tree: TVirtualStringTree; SelectedOnly: Boolean = False);
+procedure VTreeToXML(Tree: TVirtualStringTree; Filename: String);
 
 implementation
 
-procedure TreeToXML(Tree: TTreeView; Filename: String);
+procedure VTreeToXML(Tree: TVirtualStringTree; Filename: String);
 var
   i: integer;
-  lNode,lNode2: TTreeNode;
-  GData: TGameData;
+  lNode,lNode2: PVirtualNode;
+  GData: PTreeData;
   Data: TStringList;
 
-  procedure nProcessNode(Node: TTreeNode);
+  procedure nProcessNode(Node: PVirtualNode);
   var
-    GData: TGameData;
-    cNode,cNode2: TTreeNode;
+    GData: PTreeData;
+    cNode,cNode2: PVirtualNode;
     FName,indent: String;
     i: integer;
   begin
     if (Node = nil) then exit;
     indent := '';
-    for i := 0 to Node.Level do
+    for i := 0 to Tree.GetNodeLevel(Node) do
       indent := indent + '  ';
-    GData := TGameData(Node.Data);
-    FName := StringReplace(GData.Name,'&','&amp;',[rfReplaceAll]);
-    if (GData.FType = 'Folder') and (Node <> Tree.Items[0]) then
-      Data.Add(indent+'<Folder name="'+FName+'" icon="'+GData.Icon+'" position="3">');
+    GData := Tree.GetNodeData(Node);
+    FName := StringReplace(GData^.Name,'&','&amp;',[rfReplaceAll]);
+    if (GData^.FType = 'Folder') and (Node <> Tree.GetFirst()) then
+      Data.Add(indent+'<Folder name="'+FName+'" icon="'+GData^.Icon+'" position="3">');
 
-    if (GData.FType = 'Game') then
-      Data.Add(indent+'<Game code="'+GData.Code+'" name="'+FName+'" />');
+    if (GData^.FType = 'Game') then
+      Data.Add(indent+'<Game code="'+GData^.Code+'" name="'+FName+'" />');
 
     // Goes to the child node
-    cNode := Node.GetFirstChild;
+    cNode := Tree.GetFirstChild(Node);
 
     // Processes all child nodes
     while cNode <> nil do
       begin
-        cNode2 := cNode.GetNextSibling;
+        cNode2 := Tree.GetNextSibling(cNode);
         nProcessNode(cNode);
         cNode := cNode2;
       end;
 
-    if (GData.FType = 'Folder') and (Node <> Tree.Items[0]) then
+    if (GData^.FType = 'Folder') and (Node <> Tree.GetFirst()) then
       Data.Add(indent+'</Folder>');
   end;
 
 begin
-  if (Tree.Items.Count = 0) then exit;
+  if (Tree.GetFirst() = nil) then exit;
   Data := TStringList.Create;
   try
     Data.Add('<?xml version="1.0" encoding="utf-16"?>');
     Data.Add('<Tree>');
-    lNode := Tree.Items[0];
+    lNode := Tree.GetFirst();
     while (lNode <> nil) do
       begin
-        lNode2 := lNode.GetNextSibling;
+        lNode2 := Tree.GetNextSibling(lNode);
         nProcessNode(lNode);
         lNode := lNode2;
       end;
@@ -100,54 +100,54 @@ begin
   end;
 end;
 
-procedure DeleteShortcuts(Tree: TTreeView; SelectedOnly: Boolean = False);
+procedure DeleteShortcuts(Tree: TVirtualStringTree; SelectedOnly: Boolean = False);
 var
-  lNode,lNode2: TTreeNode;
-  GData: TGameData;
+  lNode,lNode2: PVirtualNode;
+  GData: PTreeData;
 
-  procedure nProcessNode(Node: TTreeNode);
+  procedure nProcessNode(Node: PVirtualNode);
   var
-    GData: TGameData;
-    nNode,cNode,cNode2: TTreeNode;
+    GData: PTreeData;
+    nNode,cNode,cNode2: PVirtualNode;
     Res,Process: Boolean;
   begin
     if (Node = nil) then exit;
     Process := False;
-    GData := TGameData(Node.Data);
+    GData := Tree.GetNodeData(Node);
 
-    if (GData.FType = 'Shortcut') and (not SelectedOnly) then
+    if (GData^.FType = 'Shortcut') and (not SelectedOnly) then
       Process := True;
-    if (GData.FType = 'Shortcut') and (SelectedOnly) and (NodeChecked(Node)) then
+    if (GData^.FType = 'Shortcut') and (SelectedOnly) and (VNodeChecked(Tree,Node)) then
       Process := True;
 
     if Process then
       begin
-        if DirectoryExists(GData.FilePath) then
+        if DirectoryExists(GData^.FilePath) then
           begin
-            Res := DeleteDirectory(GData.FilePath,True);
-            if Res then Res := RemoveDir(GData.FilePath)
+            Res := DeleteDirectory(GData^.FilePath,True);
+            if Res then Res := RemoveDir(GData^.FilePath)
           end;
-        cNode := Node.GetFirstChild;
-        Tree.Items.Delete(Node);
+        cNode := Tree.GetFirstChild(Node);
+        Tree.DeleteNode(Node);
       end
     else
-      cNode := Node.GetFirstChild;
+      cNode := Tree.GetFirstChild(Node);
 
     // Processes all child nodes
     while cNode <> nil do
       begin
-        cNode2 := cNode.GetNextSibling;
+        cNode2 := Tree.GetNextSibling(cNode);
         nProcessNode(cNode);
         cNode := cNode2;
       end;
   end;
 
 begin
-  if (Tree.Items.Count = 0) then exit;
-  lNode := Tree.Items[0];
+  if (Tree.GetFirst() = nil) then exit;
+  lNode := Tree.GetFirst();
   while (lNode <> nil) do
     begin
-      lNode2 := lNode.GetNextSibling;
+      lNode2 := Tree.GetNextSibling(lNode);
       nProcessNode(lNode);
       lNode := lNode2;
     end;
@@ -183,15 +183,15 @@ begin
   end;
 end;
 
-function SaveShortcuts(Tree: TTreeView; Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
+function SaveShortcuts(Tree: TVirtualStringTree; Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
 var
-  lNode,lNode2: TTreeNode;
+  lNode,lNode2: PVirtualNode;
   StatusPanel: TStatusPanel;
 
-  procedure nProcessNode(Node: TTreeNode);
+  procedure nProcessNode(Node: PVirtualNode);
   var
-    GData,FData: TGameData;
-    pNode,cNode,cNode2: TTreeNode;
+    GData,FData: PTreeData;
+    pNode,cNode,cNode2: PVirtualNode;
     TmList,TmList2,sList,EmptyFile: TStringList;
     h,a: integer;
     nPath,sPath,Suffix: String;
@@ -199,15 +199,15 @@ var
   begin
     if (Node = nil) then exit;
   // find all games in the tree
-    GData := TGameData(Node.Data);
-    if (GData.FType = 'Game') and (NodeChecked(Node)) then
+    GData := Tree.GetNodeData(Node);
+    if (GData^.FType = 'Game') then // and (VNodeChecked(Tree,Node)) then
       begin
         pNode := Node;
         sList := TStringList.Create;
         try
       // get the source path
           sPath := '';
-          FindAllFiles(sList,Path,GData.Code+'.desktop',True,faDirectory);
+          FindAllFiles(sList,Path,GData^.Code+'.desktop',True,faDirectory);
           if (sList <> nil) and (sList.Count > 0) then
             begin
               sPath := ExtractFilePath(sList[0]);
@@ -218,14 +218,14 @@ var
         TmList := TStringList.Create;
         try
       // create a list of folder name's that lead to path of the game
-          while (Assigned(pNode.Parent)) do
+          while (Assigned(Tree.NodeParent[pNode])) do
             begin
-              pNode := pNode.Parent;
-              FData := TGameData(pNode.Data);
-              if (FData.FType = 'Folder') and (FData.Code = 'HOME') then
+              pNode := Tree.NodeParent[pNode];
+              FData := Tree.GetNodeData(pNode);
+              if (FData^.FType = 'Folder') and (FData^.Code = 'HOME') then
                 TmList.Insert(0,'---HOME---')
               else
-                TmList.Insert(0,pNode.Text);
+                TmList.Insert(0,FData^.Name);
             end;
       // parse the list to find the actual file path that will be used to save shortcut
           if (TmList <> nil) and (TmList.Count > 0) then
@@ -258,15 +258,15 @@ var
                   end;
                   if err then break;
                 end;
-              if (not DirectoryExists(nPath+'\'+GData.Code)) then
+              if (not DirectoryExists(nPath+'\'+GData^.Code)) then
                 begin
-                  CreateDir(nPath+'\'+GData.Code);
-                  Copyfile(sPath+GData.Code+'.desktop',nPath+'\'+GData.Code+'\'+GData.Code+'.desktop');
+                  CreateDir(nPath+'\'+GData^.Code);
+                  Copyfile(sPath+GData^.Code+'.desktop',nPath+'\'+GData^.Code+'\'+GData^.Code+'.desktop');
                   EmptyFile := TStringList.Create;
                   try
                     EmptyFile.LineBreak := #10;
                     EmptyFile.Add('');
-                    EmptyFile.SaveToFile(nPath+'\'+GData.Code+'\'+'.sht');
+                    EmptyFile.SaveToFile(nPath+'\'+GData^.Code+'\'+'.sht');
                   finally
                     EmptyFile.Free;
                   end;
@@ -281,12 +281,12 @@ var
       end;
 
     // Goes to the child node
-    cNode := Node.GetFirstChild;
+    cNode := Tree.GetFirstChild(Node);
 
     // Processes all child nodes
     while cNode <> nil do
       begin
-        cNode2 := cNode.GetNextSibling;
+        cNode2 := Tree.GetNextSibling(cNode);
         nProcessNode(cNode);
         cNode := cNode2;
       end;
@@ -294,17 +294,17 @@ var
 
 begin
   SaveShortcuts := False;
-  if (Tree.Items.Count = 0) then exit;
+  if (Tree.GetFirst() = nil) then exit;
 
   ProgressBar.Visible := True;
   StatusPanel := StatusBar.Panels.Items[1];
-  ProgressBar.Max := GameCount(Tree);
+  ProgressBar.Max := VGameCount(Tree);
   ProgressBar.Position:=0;
 
-  lNode := Tree.Items[0];
+  lNode := Tree.GetFirst();
   while (lNode <> nil) do
     begin
-      lNode2 := lNode.GetNextSibling;
+      lNode2 := Tree.GetNextSibling(lNode);
       nProcessNode(lNode);
       lNode := lNode2;
     end;
@@ -375,7 +375,7 @@ var
 begin
   if not TryStrToInt(Number,num) then
     begin
-      ShowMessage('Error: String ('+Number+') not a valid number.');
+      ShowMessage('Error: String ('+Number+') is not a valid number.');
       exit;
     end;
   num := num+1;
@@ -385,7 +385,7 @@ begin
     GenerateFolderName := 'CLV-S-'+Format('%.5d',[num]);
 end;
 
-function CreateFaveLinks(ConsolePath: String; GamesList: TTreeView; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
+function CreateFaveLinks(ConsolePath: String; GamesList: TVirtualStringTree; ProgressBar: TProgressBar; StatusBar: TStatusBar; var FolderSuff: String):Boolean;
 var
   GL,DeskFile,EmptyFile,FindLink: TStringList;
   StatusPanel: TStatusPanel;
@@ -403,7 +403,7 @@ begin
   StatusPanel := StatusBar.Panels.Items[1];
   try
     GL := TStringList.Create;
-    GetCheckedCodes(GamesList,GL);
+    VGetCheckedCodes(GamesList,GL);
     ProgressBar.Max := GL.Count+3;
     ProgressBar.Position:=0;
   finally

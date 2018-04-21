@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 371
+  Left = 543
   Height = 557
-  Top = 78
+  Top = 128
   Width = 548
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
@@ -11,7 +11,6 @@ object Form1: TForm1
   Menu = MainMenu1
   OnClose = FormClose
   OnCreate = FormCreate
-  OnMouseUp = FormMouseUp
   Position = poScreenCenter
   LCLVersion = '1.8.2.0'
   object SaveBtn: TButton
@@ -30,7 +29,7 @@ object Form1: TForm1
     Width = 130
     Caption = '&Clear Favorites'
     OnClick = ClearBtnClick
-    TabOrder = 1
+    TabOrder = 5
   end
   object Label1: TLabel
     Left = 16
@@ -131,29 +130,6 @@ object Form1: TForm1
     OnChange = NANDCheckBoxChange
     TabOrder = 6
   end
-  object TreeView1: TTreeView
-    Left = 338
-    Height = 241
-    Top = 224
-    Width = 195
-    ExpandSignColor = clHighlight
-    ExpandSignType = tvestArrowFill
-    HideSelection = False
-    PopupMenu = PopupMenu1
-    ReadOnly = True
-    SelectionColor = clSilver
-    SelectionFontColor = clNavy
-    SelectionFontColorUsed = True
-    ShowLines = False
-    SortType = stBoth
-    TabOrder = 7
-    OnCompare = TreeView1Compare
-    OnCustomDrawItem = TreeView1CustomDrawItem
-    OnDeletion = TreeView1Deletion
-    OnMouseDown = TreeView1MouseDown
-    Options = [tvoAutoItemHeight, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowRoot, tvoToolTips]
-    TreeLinePenStyle = psClear
-  end
   object ClearShcBtn: TButton
     Left = 441
     Height = 38
@@ -161,7 +137,7 @@ object Form1: TForm1
     Width = 95
     Caption = 'Cl&ear Shortcuts'
     OnClick = ClearShcBtnClick
-    TabOrder = 8
+    TabOrder = 7
   end
   object AddShortCutsBtn: TButton
     Left = 302
@@ -172,7 +148,7 @@ object Form1: TForm1
     Font.Style = [fsBold]
     OnClick = AddShortCutsBtnClick
     ParentFont = False
-    TabOrder = 9
+    TabOrder = 8
   end
   object Label4: TLabel
     Left = 360
@@ -190,40 +166,37 @@ object Form1: TForm1
     Top = 199
     Width = 234
   end
-  object TreeView2: TTreeView
+  object VST: TVirtualStringTree
     Left = 16
     Height = 433
     Top = 32
     Width = 272
-    BorderSpacing.CellAlignVertical = ccaCenter
-    DefaultItemHeight = 18
-    ExpandSignColor = clHighlight
-    ExpandSignType = tvestArrowFill
-    HideSelection = False
-    Images = ImageList1
-    Indent = 0
+    DefaultText = 'Node'
+    DrawSelectionMode = smBlendedRectangle
+    Header.AutoSizeIndex = 0
+    Header.Columns = <>
+    Header.MainColumn = -1
+    HintMode = hmTooltip
+    IncrementalSearch = isInitializedOnly
+    ParentShowHint = False
     PopupMenu = PopupMenu2
-    ReadOnly = True
-    ScrollBars = ssAutoVertical
-    SelectionColor = clSilver
-    SelectionFontColor = clNavy
-    SelectionFontColorUsed = True
-    ShowLines = False
-    SortType = stBoth
-    StateImages = ImageList1
-    TabOrder = 10
-    OnClick = TreeView2Click
-    OnCompare = TreeView1Compare
-    OnCustomDrawItem = TreeView2CustomDrawItem
-    OnDeletion = TreeView1Deletion
-    OnKeyDown = TreeView2KeyDown
-    OnMouseDown = TreeView2MouseDown
-    OnMouseLeave = TreeView2MouseLeave
-    OnMouseMove = TreeView2MouseMove
-    OnMouseUp = TreeView2MouseUp
-    OnSelectionChanged = TreeView2SelectionChanged
-    Options = [tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowRoot, tvoToolTips]
-    TreeLinePenStyle = psClear
+    ShowHint = True
+    TabOrder = 1
+    TreeOptions.AnimationOptions = [toAnimatedToggle, toAdvancedAnimatedToggle]
+    TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toEditable, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toFullRowDrag]
+    TreeOptions.PaintOptions = [toHideSelection, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseBlendedImages, toAlwaysHideSelection]
+    TreeOptions.SelectionOptions = [toFullRowSelect]
+    OnAfterItemPaint = VSTAfterItemPaint
+    OnChecked = VSTChecked
+    OnCompareNodes = VSTCompareNodes
+    OnFocusChanged = VSTFocusChanged
+    OnFreeNode = VSTFreeNode
+    OnGetText = VSTGetText
+    OnGetNodeDataSize = VSTGetNodeDataSize
+    OnIncrementalSearch = VSTIncrementalSearch
+    OnMouseDown = VSTMouseDown
+    OnMouseMove = VSTMouseMove
+    OnMouseLeave = VSTMouseLeave
   end
   object SaveShcBtn: TButton
     Left = 338
@@ -232,7 +205,36 @@ object Form1: TForm1
     Width = 95
     Caption = 'Sa&ve Shortcuts'
     OnClick = SaveShcBtnClick
+    TabOrder = 9
+  end
+  object SVST: TVirtualStringTree
+    Left = 338
+    Height = 241
+    Top = 224
+    Width = 195
+    ButtonFillMode = fmShaded
+    ButtonStyle = bsTriangle
+    Colors.HotColor = clHotLight
+    Colors.TreeLineColor = clHighlight
+    DefaultText = 'Node'
+    DrawSelectionMode = smBlendedRectangle
+    Header.AutoSizeIndex = 0
+    Header.Columns = <>
+    Header.MainColumn = -1
+    Indent = 5
+    ParentFont = False
+    PopupMenu = PopupMenu1
+    SelectionCurveRadius = 5
     TabOrder = 11
+    TreeOptions.AnimationOptions = [toAnimatedToggle, toAdvancedAnimatedToggle]
+    TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseBlendedImages]
+    TreeOptions.SelectionOptions = [toRestoreSelection]
+    OnCompareNodes = SVSTCompareNodes
+    OnDrawText = SVSTDrawText
+    OnFreeNode = VSTFreeNode
+    OnGetText = VSTGetText
+    OnGetNodeDataSize = VSTGetNodeDataSize
+    OnMouseDown = SVSTMouseDown
   end
   object MainMenu1: TMainMenu
     left = 24
@@ -271,6 +273,13 @@ object Form1: TForm1
         object SelectedOption: TMenuItem
           Caption = 'Selected games only'
           OnClick = SelectedOptionClick
+        end
+        object ShortcutsOption: TMenuItem
+          Caption = 'Shortcuts only'
+          OnClick = ShortcutsOptionClick
+        end
+        object MenuItem12: TMenuItem
+          Caption = '-'
         end
         object GameInfoOption: TMenuItem
           Caption = 'Show game information'
@@ -358,10 +367,6 @@ object Form1: TForm1
   object HakchiConfigDlg: TSelectDirectoryDialog
     Options = [ofPathMustExist, ofEnableSizing, ofViewDetail]
     left = 33
-    top = 115
-  end
-  object ImageList1: TImageList
-    left = 240
     top = 115
   end
   object PopupMenu2: TPopupMenu

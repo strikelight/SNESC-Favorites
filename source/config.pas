@@ -25,13 +25,11 @@ unit config;
 interface
 
 uses
-  Classes, SysUtils, Inifiles, ComCtrls, EditBtn, DateUtils, StdCtrls, Menus,
+  Classes, SysUtils, Inifiles, ComCtrls, EditBtn, DateUtils, StdCtrls, Menus, VirtualTrees,
   ui_utils;
 
-function SaveConfig(XMLEdit:String; GamesEdit:String; NANDChecked:Boolean; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; ViewGameInfo:Boolean; HomeName:String; Tree:TTreeView):Boolean;
-function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; GameTree: TTreeView; TreeView:TTreeView; var NANDCheckBox:TCheckBox; var ViewStyle:Integer; var ViewSelected:Boolean; var ViewGameInfo:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
-function SaveSlot(Slot: Integer; Tree:TTreeView; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
-function LoadSlot(Slot: Integer; Tree:TTreeView; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
+function SaveConfig(XMLEdit:String; GamesEdit:String; NANDChecked:Boolean; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; ViewShortcuts: Boolean; ViewGameInfo:Boolean; HomeName:String; Tree:TVirtualStringTree):Boolean;
+function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; vGameTree: TVirtualStringTree; vTreeView: TVirtualStringTree; var NANDCheckBox:TCheckBox; var ViewStyle:Integer; var ViewSelected:Boolean; var ViewShortcuts:Boolean; var ViewGameInfo:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
 function GetSavedChecked(Slot: Integer):String;
 
 implementation
@@ -55,74 +53,7 @@ begin
   GetSavedChecked := Res;
 end;
 
-function LoadSlot(Slot:Integer; Tree:TTreeView; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
-var
-  Ini: TIniFile;
-  AppPath,CheckedGames,CheckedHashes: String;
-  ChkStringList: TStringList;
-begin
-  AppPath := ExtractFilePath(ParamStr(0));
-  Ini := TIniFile.Create(AppPath+'config.ini');
-  ChkStringList := TStringList.Create;
-  try
-    SlotMenu.Caption := Ini.ReadString('games','name'+inttostr(Slot),'Slot '+inttostr(Slot));
-    if (not NameOnly) then
-      begin
-        CheckedGames := Ini.ReadString('games','checked'+inttostr(Slot),'');
-        CheckedHashes := Ini.ReadString('games','shortcuts'+inttostr(Slot),'');
-        ChkStringList.Clear;
-        ChkStringList.Delimiter := ',';
-        ChkStringList.StrictDelimiter := True;
-        ChkStringList.DelimitedText := CheckedGames+','+CheckedHashes;
-        ChkStringList.Sort;
-        ChkStringList.Sorted := True;
-        CheckNodesList(Tree,ChkStringList);
-      end;
-  finally
-    Ini.Free;
-    ChkStringList.Free;
-  end;
-  LoadSlot := True;
-end;
-
-function SaveSlot(Slot:Integer; Tree:TTreeView; SlotMenu:TMenuItem; NameOnly:Boolean = False):Boolean;
-var
-  Ini: TIniFile;
-  AppPath,CheckedGames,CheckedHashes: String;
-  i: Integer;
-  GL: TStringList;
-begin
-  AppPath := ExtractFilePath(ParamStr(0));
-  Ini := TIniFile.Create(AppPath+'config.ini');
-  GL := TStringList.Create;
-  try
-    CheckedGames := '';
-    Ini.WriteString('games','name'+inttostr(Slot),SlotMenu.Caption);
-    if (not NameOnly) then
-      begin
-        GetCheckedCodes(Tree,GL);
-        for i := 0 to (GL.Count-1) do
-          begin
-            CheckedGames := CheckedGames+' '+GL[i];
-          end;
-        CheckedGames := StringReplace(Trim(CheckedGames),' ',',',[rfReplaceAll]);
-        GetCheckedHashes(Tree,GL);
-        for i := 0 to (GL.Count-1) do
-          begin
-            CheckedHashes := CheckedHashes+' '+GL[i];
-          end;
-        CheckedHashes := StringReplace(Trim(CheckedHashes),' ',',',[rfReplaceAll]);
-        Ini.WriteString('games','checked'+inttostr(Slot),CheckedGames);
-        Ini.WriteString('games','shortcuts'+inttostr(Slot),CheckedHashes);
-      end;
-  finally
-    Ini.Free;
-    GL.Free;
-  end;
-  SaveSlot := True;
-end;
-
-function SaveConfig(XMLEdit:String; GamesEdit:String; NANDChecked: Boolean; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; ViewGameInfo:Boolean; HomeName:String; Tree:TTreeView):Boolean;
+function SaveConfig(XMLEdit:String; GamesEdit:String; NANDChecked: Boolean; LastFavFolder:String; ViewStyle:Integer; ViewSelected:Boolean; ViewShortcuts: Boolean; ViewGameInfo:Boolean; HomeName:String; Tree:TVirtualStringTree):Boolean;
 var
   Ini: TIniFile;
   GL: TStringList;
@@ -139,16 +70,17 @@ begin
     Ini.WriteString('config','lastfav',LastFavFolder);
     Ini.WriteInteger('config','view',ViewStyle);
     Ini.WriteBool('config','viewselect',ViewSelected);
+    Ini.WriteBool('config','viewshortcuts',ViewShortcuts);
     Ini.WriteBool('config','viewgameinfo',ViewGameInfo);
     Ini.WriteString('config','home',HomeName);
     GL := TStringList.Create;
-    GetCheckedCodes(Tree,GL);
+    VGetCheckedCodes(Tree,GL);
     for i := 0 to (GL.Count-1) do
       begin
         CheckedGames := CheckedGames+' '+GL[i];
       end;
     CheckedGames := StringReplace(Trim(CheckedGames),' ',',',[rfReplaceAll]);
-    GetCheckedHashes(Tree,GL);
+    VGetCheckedHashes(Tree,GL);
     for i := 0 to (GL.Count-1) do
       begin
         CheckedHashes := CheckedHashes+' '+GL[i];
@@ -163,7 +95,7 @@ begin
   SaveConfig := True;
 end;
 
-function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; GameTree: TTreeView; TreeView:TTreeView; var NANDCheckBox:TCheckBox; var ViewStyle:Integer; var ViewSelected:Boolean; var ViewGameInfo:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
+function LoadConfig(XMLEdit:TFilenameEdit; GamesEdit:TDirectoryEdit; vGameTree: TVirtualStringTree; vTreeView: TVirtualStringTree; var NANDCheckBox:TCheckBox; var ViewStyle:Integer; var ViewSelected:Boolean; var ViewShortcuts:Boolean; var ViewGameInfo:Boolean; var LastFavFolder:String; var HomeName:String):Boolean;
 var
   Ini: TIniFile;
   ChkStringList,SlotList: TStringList;
@@ -183,6 +115,7 @@ begin
     CheckedHashes := Ini.ReadString('config','shortcuts','');
     ViewStyle := Ini.ReadInteger('config','view',1);
     ViewSelected := Ini.ReadBool('config','viewselect',False);
+    ViewShortcuts := Ini.ReadBool('config','viewshortcuts',False);
     ViewGameInfo := Ini.ReadBool('config','viewgameinfo',True);
     HomeName := Ini.ReadString('config','home','HOME');
 
@@ -193,8 +126,8 @@ begin
       GamesEdit.Enabled:=True;
     if (FileExists(XMLEdit.Caption)) then
       begin
-        XML2Tree(TreeView,XMLEdit.Caption,False,HomeName);
-        XML2Tree(GameTree,XMLEdit.Caption,True,HomeName);
+        XML2VTree(VTreeView,XMLEdit.Caption,False,HomeName);
+        XML2VTree(VGameTree,XMLEdit.Caption,True,HomeName);
       end;
     ChkStringList.Clear;
     ChkStringList.Delimiter := ',';
@@ -202,11 +135,11 @@ begin
     ChkStringList.DelimitedText := CheckedGames+','+CheckedHashes;
     ChkStringList.Sort;
     ChkStringList.Sorted := True;
-    PopulatePathData(GameTree,GamesEdit.Caption);
-    PopulateFolderData(GameTree,GamesEdit.Caption);
-    PopulateFolderData(TreeView,GamesEdit.Caption);
-    PopulateShortcuts(GameTree,GamesEdit.Caption);
-    CheckNodesList(GameTree,ChkStringList);
+    VPopulatePathData(VGameTree,GamesEdit.Caption);
+    VPopulateFolderData(VGameTree,GamesEdit.Caption);
+    VPopulateFolderData(VTreeView,GamesEdit.Caption);
+    VPopulateShortcuts(VGameTree,GamesEdit.Caption);
+    CheckVNodesList(VGameTree,ChkStringList);
   finally
     Ini.Free;
     ChkStringList.Free;

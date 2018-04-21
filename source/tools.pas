@@ -193,12 +193,10 @@ begin
           re1 := TRegExpr.Create('Exec=/bin/(.[^ ]*)');
           try
             FData.LoadFromFile(FList[k]);
-//            debuglog('AG1 '+Flist[k]);
             if re1.Exec(FData.Text) then
               begin
                 ccmd := re1.Match[1];
                 prefix := CMDToPrefix(ccmd);
-//                debuglog('AG: '+FList[k]+' '+ccmd+' '+prefix);
                 if (prefix <> '') then
                   begin
                     re1.Expression := 'Name=(.[^'+#10+']*)';
