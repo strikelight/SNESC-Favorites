@@ -880,7 +880,7 @@ object AboutForm: TAboutForm
   object Label5: TLabel
     Left = 16
     Height = 15
-    Top = 112
+    Top = 115
     Width = 45
     Caption = 'Support:'
     ParentColor = False
@@ -888,7 +888,7 @@ object AboutForm: TAboutForm
   object StaticText1: TStaticText
     Left = 64
     Height = 16
-    Top = 112
+    Top = 114
     Width = 38
     AutoSize = True
     Caption = 'GitHub'
@@ -904,7 +904,7 @@ object AboutForm: TAboutForm
   object PwrLabel: TLabel
     Left = 16
     Height = 15
-    Top = 160
+    Top = 164
     Width = 188
     Caption = 'Powered by: Lazarus 1.8.2, FPC 3.0.4'
     ParentColor = False
@@ -928,5 +928,55 @@ object AboutForm: TAboutForm
     Font.Style = [fsBold]
     ParentColor = False
     ParentFont = False
+  end
+  object StaticText2: TStaticText
+    Left = 111
+    Height = 16
+    Top = 114
+    Width = 40
+    AutoSize = True
+    Caption = 'Discord'
+    Color = clDefault
+    Font.Color = clNavy
+    OnClick = StaticText2Click
+    OnMouseEnter = StaticText2MouseEnter
+    OnMouseLeave = StaticText2MouseLeave
+    ParentFont = False
+    ParentColor = False
+    TabOrder = 2
+  end
+  object StaticText3: TStaticText
+    Left = 161
+    Height = 16
+    Top = 114
+    Width = 34
+    AutoSize = True
+    Caption = 'Reddit'
+    Color = clDefault
+    Font.Color = clNavy
+    OnClick = StaticText3Click
+    OnMouseEnter = StaticText3MouseEnter
+    OnMouseLeave = StaticText3MouseLeave
+    ParentFont = False
+    ParentColor = False
+    TabOrder = 3
+  end
+  object StaticText4: TStaticText
+    Left = 104
+    Height = 16
+    Top = 114
+    Width = 5
+    AutoSize = True
+    Caption = '/'
+    TabOrder = 4
+  end
+  object StaticText5: TStaticText
+    Left = 154
+    Height = 16
+    Top = 114
+    Width = 5
+    AutoSize = True
+    Caption = '/'
+    TabOrder = 5
   end
 end

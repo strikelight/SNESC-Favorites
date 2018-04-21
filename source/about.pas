@@ -49,6 +49,10 @@ type
     Label5: TLabel;
     PwrLabel: TLabel;
     RDLabel: TLabel;
+    StaticText2: TStaticText;
+    StaticText3: TStaticText;
+    StaticText4: TStaticText;
+    StaticText5: TStaticText;
     VerLabel: TLabel;
     PrgInfoLabel: TLabel;
     StaticText1: TStaticText;
@@ -56,6 +60,12 @@ type
     procedure StaticText1Click(Sender: TObject);
     procedure StaticText1MouseEnter(Sender: TObject);
     procedure StaticText1MouseLeave(Sender: TObject);
+    procedure StaticText2Click(Sender: TObject);
+    procedure StaticText2MouseEnter(Sender: TObject);
+    procedure StaticText2MouseLeave(Sender: TObject);
+    procedure StaticText3Click(Sender: TObject);
+    procedure StaticText3MouseEnter(Sender: TObject);
+    procedure StaticText3MouseLeave(Sender: TObject);
   private
   public
   end;
@@ -135,6 +145,42 @@ procedure TAboutForm.StaticText1MouseLeave(Sender: TObject);
 begin
   StaticText1.Font.Color := clNavy;
   StaticText1.Font.Style := [];
+end;
+
+procedure TAboutForm.StaticText2Click(Sender: TObject);
+begin
+  OpenUrl('https://discord.gg/QMsazaS');
+end;
+
+procedure TAboutForm.StaticText2MouseEnter(Sender: TObject);
+begin
+  StaticText2.Cursor := crHandPoint;
+  StaticText2.Font.Color := clBlue;
+  StaticText2.Font.Style := [fsUnderline];
+end;
+
+procedure TAboutForm.StaticText2MouseLeave(Sender: TObject);
+begin
+  StaticText2.Font.Color := clNavy;
+  StaticText2.Font.Style := [];
+end;
+
+procedure TAboutForm.StaticText3Click(Sender: TObject);
+begin
+  OpenUrl('https://www.reddit.com/r/miniSNESmods/');
+end;
+
+procedure TAboutForm.StaticText3MouseEnter(Sender: TObject);
+begin
+  StaticText3.Cursor := crHandPoint;
+  StaticText3.Font.Color := clBlue;
+  StaticText3.Font.Style := [fsUnderline];
+end;
+
+procedure TAboutForm.StaticText3MouseLeave(Sender: TObject);
+begin
+  StaticText3.Font.Color := clNavy;
+  StaticText3.Font.Style := [];
 end;
 
 end.
