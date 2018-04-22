@@ -1181,6 +1181,7 @@ begin
   FPath := ExtractFilePath(ParamStr(0));
   GData := SVST.GetNodeData(Node);
   FName := GetLastFolderNumber(GData^.FilePath+'\',True);
+  ShowMessage('FName for '+Gdata^.FilePath+' is '+FName);
   if (FName = '') then exit;
   Fname := GenerateFolderName(FName,True);
   if (ConsolePath[Length(ConsolePath)] <> '\') then
@@ -1199,12 +1200,11 @@ begin
           if (Node = SVST.GetFirst()) then pNode := nil
           else pNode := Node;
           nNode := SVST.AddChild(pNode);
-          GData2 := SetNodeData(SVST,nNode,NewName,'Folder','','','',pNode);
-          GData2^.Icon := GData2^.Hash;
-          if (GData2^.TopParent = nil) then GData2^.TopParent := nNode;
           LFName := GetLastFolderNumber(ConsolePath);
           LFName := GenerateFolderName(LFName);
-          GData2^.FilePath := ConsolePath+LFName;
+          GData2 := SetNodeData(SVST,nNode,NewName,'Folder',ConsolePath+LFName,'','',pNode);
+          GData2^.Icon := GData2^.Hash;
+          if (GData2^.TopParent = nil) then GData2^.TopParent := nNode;
           CreateDir(GData2^.FilePath);
           CreateDir(GData^.FilePath+'\CLV-S-00'+LFName);
 

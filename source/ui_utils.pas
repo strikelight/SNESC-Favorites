@@ -145,176 +145,77 @@ end;
 
 procedure CheckVNodesList(Tree:TVirtualStringTree; ChkList: TStringList);
 var
-  lNode,lNode2: PVirtualNode;
-
-  procedure nProcessNode(Node: PVirtualNode);
-  var
-    GData: PTreeData;
-    cNode,cNode2: PVirtualNode;
-  begin
-    if (Node = nil) then exit;
-
-    GData := Tree.GetNodeData(Node);
-    if (GData^.FType = 'Game') and (ChkList.IndexOf(GData^.Code) > -1) then
-      begin
-        CheckVNode(Tree, node, true);
-//        CheckNode(node, true);
-      end
-    else if (GData^.FType = 'Shortcut') and (ChkList.IndexOf(GData^.Hash) > -1) then
-      begin
-        CheckVNode(Tree, node, true);
-//        CheckNode(node, true);
-      end
-    else
-      begin
-        CheckVNode(Tree, node, false);
-//        CheckNode(node, false);
-      end;
-
-    // Goes to the child node
-    cNode := Tree.GetFirstChild(Node);
-//    cNode := Node.GetFirstChild;
-
-    // Processes all child nodes
-    while cNode <> nil do
-      begin
-        cNode2 := Tree.GetNextSibling(cNode);
-        nProcessNode(cNode);
-        cNode := cNode2;
-      end;
-  end;
-
+  lNode: PVirtualNode;
+  GData: PTreeData;
 begin
-//  if (Tree.Items.Count = 0) then exit;
   lNode := Tree.GetFirst();
   ChkList.Sorted:=True;
   while (Assigned(lNode)) do
     begin
-      lNode2 := Tree.GetNextSibling(lNode);
-      nProcessNode(lNode);
-      lNode := lNode2;
+      GData := Tree.GetNodeData(lNode);
+      if (GData^.FType = 'Game') and (ChkList.IndexOf(GData^.Code) > -1) then
+        CheckVNode(Tree, lNode, true)
+      else if (GData^.FType = 'Shortcut') and (ChkList.IndexOf(GData^.Hash) > -1) then
+          CheckVNode(Tree, lNode, true)
+      else
+        CheckVNode(Tree, lNode, false);
+      lNode := Tree.GetNext(lNode);
     end;
 end;
 
 function VGameCount(Tree: TVirtualStringTree):Integer;
 var
-  lNode,lNode2: PVirtualNode;
+  lNode: PVirtualNode;
+  GData: PTreeData;
   total: Integer;
-
-  procedure nProcessNode(Node: PVirtualNode);
-  var
-    GData: PTreeData;
-    cNode,cNode2: PVirtualNode;
-  begin
-    if (Node = nil) then exit;
-
-    GData := Tree.GetNodeData(Node);
-    if (GData^.FType = 'Game') then inc(Total);
-
-    // Goes to the child node
-    cNode := Tree.GetFirstChild(Node);
-
-    // Processes all child nodes
-    while cNode <> nil do
-      begin
-        cNode2 := Tree.GetNextSibling(cNode);
-        nProcessNode(cNode);
-        cNode := cNode2;
-      end;
-  end;
-
 begin
   total := 0;
-  if (Tree.GetFirst() = nil) then
+  lNode := Tree.GetFirst();
+  if (lNode = nil) then
     begin
       VGameCount := total;
       exit;
     end;
-  lNode := Tree.GetFirst();
   while (lNode <> nil) do
     begin
-      lNode2 := Tree.GetNextSibling(lNode);
-      nProcessNode(lNode);
-      lNode := lNode2;
+      GData := Tree.GetNodeData(lNode);
+      if (GData^.FType = 'Game') then inc(Total);
+      lNode := Tree.GetNext(lNode);
     end;
   VGameCount := total;
 end;
 
 procedure VGetCheckedCodes(Tree: TVirtualStringTree; var List: TStringList);
 var
-  lNode,lNode2: PVirtualNode;
-
-  procedure nProcessNode(Node: PVirtualNode);
-  var
-    GData: PTreeData;
-    cNode,cNode2: PVirtualNode;
-  begin
-    if (Node = nil) then exit;
-
-    GData := Tree.GetNodeData(Node);
-    if (GData^.FType = 'Game') and (VNodeChecked(Tree,Node)) then
-      List.Add(GData^.Code);
-
-    // Goes to the child node
-    cNode := Tree.GetFirstChild(Node);
-
-    // Processes all child nodes
-    while cNode <> nil do
-      begin
-        cNode2 := Tree.GetNextSibling(cNode);
-        nProcessNode(cNode);
-        cNode := cNode2;
-      end;
-  end;
-
+  lNode: PVirtualNode;
+  GData: PTreeData;
 begin
   List.Clear;
-  if (Tree.GetFirst() = nil) then exit;
   lNode := Tree.GetFirst();
+  if (lNode = nil) then exit;
   while (lNode <> nil) do
     begin
-      lNode2 := Tree.GetNextSibling(lNode);
-      nProcessNode(lNode);
-      lNode := lNode2;
+      GData := Tree.GetNodeData(lNode);
+      if (GData^.FType = 'Game') and (VNodeChecked(Tree,lNode)) then
+        List.Add(GData^.Code);
+      lNode := Tree.GetNext(lNode);
     end;
 end;
 
 procedure VGetCheckedHashes(Tree: TVirtualStringTree; var List: TStringList);
 var
-  lNode,lNode2: PVirtualNode;
-
-  procedure nProcessNode(Node: PVirtualNode);
-  var
-    GData: PTreeData;
-    cNode,cNode2: PVirtualNode;
-  begin
-    if (Node = nil) then exit;
-
-    GData := Tree.GetNodeData(Node);
-    if (GData^.FType = 'Shortcut') and (VNodeChecked(Tree,Node)) then
-      List.Add(GData^.Hash);
-
-    // Goes to the child node
-    cNode := Tree.GetFirstChild(Node);
-
-    // Processes all child nodes
-    while cNode <> nil do
-      begin
-        cNode2 := Tree.GetNextSibling(cNode);
-        nProcessNode(cNode);
-        cNode := cNode2;
-      end;
-  end;
-
+  lNode: PVirtualNode;
+  GData: PTreeData;
 begin
   List.Clear;
-  if (Tree.GetFirst() = nil) then exit;
   lNode := Tree.GetFirst();
+  if (lNode = nil) then exit;
   while (lNode <> nil) do
     begin
-      lNode2 := Tree.GetNextSibling(lNode);
-      nProcessNode(lNode);
-      lNode := lNode2;
+      GData := Tree.GetNodeData(lNode);
+      if (GData^.FType = 'Shortcut') and (VNodeChecked(Tree,lNode)) then
+        List.Add(GData^.Hash);
+      lNode := Tree.GetNext(lNode);
     end;
 end;
 
@@ -421,132 +322,66 @@ end;
 
 procedure VClearSelections(Tree: TVirtualStringTree);
 var
-  lNode,lNode2: PVirtualNode;
-
-  procedure nProcessNode(Node: PVirtualNode);
-  var
-    GData: PTreeData;
-    cNode,cNode2: PVirtualNode;
-  begin
-    if (Node = nil) then exit;
-
-    GData := Tree.GetNodeData(Node);
-    if (GData^.FType <> 'Folder') and (VNodeChecked(Tree,Node)) then
-      ToggleVTreeViewCheckBoxes(Tree,Node);
-
-    // Goes to the child node
-    cNode := Tree.GetFirstChild(Node);
-
-    // Processes all child nodes
-    while cNode <> nil do
-      begin
-        cNode2 := Tree.GetNextSibling(cNode);
-        nProcessNode(cNode);
-        cNode := cNode2;
-      end;
-  end;
-
+  lNode: PVirtualNode;
+  GData: PTreeData;
 begin
-  if (Tree.GetFirst() = nil) then exit;
   lNode := Tree.GetFirst();
+  if (lNode = nil) then exit;
   while (lNode <> nil) do
     begin
-      lNode2 := Tree.GetNextSibling(lNode);
-      nProcessNode(lNode);
-      lNode := lNode2;
+      GData := Tree.GetNodeData(lNode);
+      if (GData^.FType <> 'Folder') and (VNodeChecked(Tree,lNode)) then
+        ToggleVTreeViewCheckBoxes(Tree,lNode);
+      lNode := Tree.GetNext(lNode);
     end;
 end;
 
 procedure VSelectionView(Tree: TVirtualStringTree; nSelected: Boolean);
 var
-  lNode,lNode2: PVirtualNode;
-
-  procedure nProcessNode(Node: PVirtualNode);
-  var
-    GData: PTreeData;
-    cNode,cNode2: PVirtualNode;
-  begin
-    if (Node = nil) then exit;
-
-    GData := Tree.GetNodeData(Node);
-    if (GData^.FType = 'Game') or (GData^.FType = 'Shortcut') then
-      begin
-        if (not VNodeChecked(Tree,Node)) and (nSelected) then
-          Tree.IsVisible[Node] := False
-        else if (VNodeChecked(Tree,Node)) and (nSelected) then
-          Tree.IsVisible[Node] := True
-        else if (not VNodeChecked(Tree,Node)) and (not nSelected) then
-          Tree.IsVisible[Node] := True;
-      end;
-
-    // Goes to the child node
-    cNode := Tree.GetFirstChild(Node);
-
-    // Processes all child nodes
-    while cNode <> nil do
-      begin
-        cNode2 := Tree.GetNextSibling(cNode);
-        nProcessNode(cNode);
-        cNode := cNode2;
-      end;
-  end;
-
+  lNode: PVirtualNode;
+  GData: PTreeData;
 begin
-  if (Tree.GetFirst() = nil) then exit;
   lNode := Tree.GetFirst();
+  if (lNode = nil) then exit;
   while (lNode <> nil) do
     begin
-      lNode2 := Tree.GetNextSibling(lNode);
-      nProcessNode(lNode);
-      lNode := lNode2;
+      GData := Tree.GetNodeData(lNode);
+      if (GData^.FType = 'Game') or (GData^.FType = 'Shortcut') then
+        begin
+          if (not VNodeChecked(Tree,lNode)) and (nSelected) then
+            Tree.IsVisible[lNode] := False
+          else if (VNodeChecked(Tree,lNode)) and (nSelected) then
+            Tree.IsVisible[lNode] := True
+          else if (not VNodeChecked(Tree,lNode)) and (not nSelected) then
+            Tree.IsVisible[lNode] := True;
+        end;
+      lNode := Tree.GetNext(lNode);
     end;
 end;
 
 procedure VShortcutsView(Tree: TVirtualStringTree; nSelected: Boolean);
 var
-  lNode,lNode2: PVirtualNode;
-
-  procedure nProcessNode(Node: PVirtualNode);
-  var
-    GData: PTreeData;
-    cNode,cNode2: PVirtualNode;
-  begin
-    if (Node = nil) then exit;
-
-    GData := Tree.GetNodeData(Node);
-    if (nSelected) and (GData^.FType = 'Shortcut') then
-      begin
-        Tree.IsVisible[Node] := True;
-      end
-    else if (nSelected) and (GData^.FType <> 'Shortcut') and (GData^.FType <> 'Folder') then
-      begin
-        Tree.IsVisible[Node] := False;
-      end
-    else if (not nSelected) and (GData^.FType <> 'Folder') then
-      begin
-        Tree.IsVisible[Node] := True;
-      end;
-
-    // Goes to the child node
-    cNode := Tree.GetFirstChild(Node);
-
-    // Processes all child nodes
-    while cNode <> nil do
-      begin
-        cNode2 := Tree.GetNextSibling(cNode);
-        nProcessNode(cNode);
-        cNode := cNode2;
-      end;
-  end;
-
+  lNode: PVirtualNode;
+  GData: PTreeData;
 begin
-  if (Tree.GetFirst() = nil) then exit;
   lNode := Tree.GetFirst();
+  if (lNode = nil) then exit;
   while (lNode <> nil) do
     begin
-      lNode2 := Tree.GetNextSibling(lNode);
-      nProcessNode(lNode);
-      lNode := lNode2;
+      GData := Tree.GetNodeData(lNode);
+      if (nSelected) and (GData^.FType = 'Shortcut') then
+        begin
+          Tree.IsVisible[lNode] := True;
+        end
+      else if (nSelected) and (GData^.FType <> 'Shortcut') and (GData^.FType <> 'Folder') then
+        begin
+          Tree.IsVisible[lNode] := False;
+        end
+      else if (not nSelected) and (GData^.FType <> 'Folder') then
+        begin
+          Tree.IsVisible[lNode] := True;
+        end;
+      lNode := Tree.GetNext(lNode);
     end;
 end;
 
@@ -891,12 +726,11 @@ var
       begin
         if (TreeView.GetNodeLevel(Node) <= 1) and (GData^.FType <> 'Folder') then
           begin
-            AttachMode := amAddChildLast; // First?
+            AttachMode := amAddChildLast;
             rNode := GData^.BelongsTo;
             if (TreeView.IsVisible[GData^.BelongsTo] = False) then
               TreeView.IsVisible[GData^.BelongsTo] := True;
-            TreeView.MoveTo(Node,rNode,AttachMode,False); // False?
-//            Node.MoveTo(rNode,AttachMode);
+            TreeView.MoveTo(Node,rNode,AttachMode,False);
           end;
 
     // Goes to the child node
@@ -952,7 +786,6 @@ var
             if (rNode = nil) then AttachMode := amAddChildFirst
             else AttachMode := amAddChildLast;
             TreeView.MoveTo(Node,rNode, AttachMode, False);
-//            Node.MoveTo(rNode,AttachMode);
           end;
       end;
     // Goes to the child node
@@ -980,102 +813,52 @@ end;
 
 procedure VUpdateFolderPathData(Tree: TVirtualStringTree; Path: String; ChildFolder: String; ParentFolder: String);
 var
-  lNode,lNode2: PVirtualNode;
-
-  procedure nProcessNode(Node: PVirtualNode);
-  var
-    cNode,cNode2: PVirtualNode;
-    GData,GData2: PTreeData;
-  begin
-    if (Node = nil) then exit;
-    ChildFolder := Trim(ChildFolder);
-    ParentFolder := Trim(ParentFolder);
-
-    GData := Tree.GetNodeData(Node);
-    if (GData^.BelongsTo <> nil) then
-      GData2 := Tree.GetNodeData(GData^.BelongsTo);
-    if (GData^.FType = 'Folder') and (GData^.Name = ChildFolder) then
-      begin
-      if ((GData^.BelongsTo = nil) and (ParentFolder = '')) or
-         ((GData2^.Name = GData^.Name) and (ParentFolder = '')) then
-        begin
-          GData^.FilePath := Path;
-          GData^.Hash := VGetHash(Tree,GData);
-          lNode2 := nil;
-          exit;
-        end
-      else if (GData2^.Name = ParentFolder) and (GData^.FilePath = '') then
-        begin
-          GData^.FilePath := Path;
-          GData^.Hash := VGetHash(Tree,GData);
-          lNode2 := nil;
-          exit;
-        end;
-      end;
-
-    // Goes to the child node
-      cNode := Tree.GetFirstChild(Node);
-
-    // Processes all child nodes
-      while cNode <> nil do
-        begin
-          cNode2 := Tree.GetNextSibling(cNode);
-          nProcessNode(cNode);
-          cNode := cNode2;
-        end;
-  end;
-
+  lNode: PVirtualNode;
+  GData,GData2: PTreeData;
 begin
   if (Tree.GetFirst() = nil) then exit;
   lNode := Tree.GetFirst();
+  ChildFolder := Trim(ChildFolder);
+  ParentFolder := Trim(ParentFolder);
   while (lNode <> nil) do
     begin
-      lNode2 := Tree.GetNextSibling(lNode);
-      nProcessNode(lNode);
-      lNode := lNode2;
+      GData := Tree.GetNodeData(lNode);
+      if (GData^.BelongsTo <> nil) then
+        GData2 := Tree.GetNodeData(GData^.BelongsTo);
+      if (GData^.FType = 'Folder') and (GData^.Name = ChildFolder) then
+        begin
+        if ((GData^.BelongsTo = nil) and (ParentFolder = '')) or
+           ((GData2^.Name = GData^.Name) and (ParentFolder = '')) then
+          begin
+            GData^.FilePath := Path;
+            GData^.Hash := VGetHash(Tree,GData);
+            exit;
+          end
+        else if (GData2^.Name = ParentFolder) and (GData^.FilePath = '') then
+          begin
+            GData^.FilePath := Path;
+            GData^.Hash := VGetHash(Tree,GData);
+            exit;
+          end;
+        end;
+      lNode := Tree.GetNext(lNode);
     end;
 end;
 
 function HashToVNode(Tree: TVirtualStringTree; Hash: String):PVirtualNode;
 var
-  lNode,lNode2,rNode: PVirtualNode;
-
-  procedure nProcessNode(Node: PVirtualNode);
-  var
-    cNode,cNode2: PVirtualNode;
-    GData: PTreeData;
-  begin
-    if (Node = nil) then exit;
-
-    GData := Tree.GetNodeData(Node);
-    if (GData^.Hash = Hash) then
-      begin
-        rNode := Node;
-        lNode2 := nil;
-        exit;
-      end;
-
-    // Goes to the child node
-      cNode := Tree.GetFirstChild(Node);
-
-    // Processes all child nodes
-      while cNode <> nil do
-        begin
-          cNode2 := Tree.GetNextSibling(cNode);
-          nProcessNode(cNode);
-          cNode := cNode2;
-        end;
-  end;
-
+  lNode,rNode: PVirtualNode;
+  GData: PTreeData;
 begin
-  if (Tree.GetFirst() = nil) then exit;
   lNode := Tree.GetFirst();
+  if (lNode = nil) then exit;
   rNode := nil;
   while (lNode <> nil) and (rNode = nil) do
     begin
-      lNode2 := Tree.GetNextSibling(lNode);
-      nProcessNode(lNode);
-      lNode := lNode2;
+      GData := Tree.GetNodeData(lNode);
+      if (GData^.Hash = Hash) then
+        rNode := lNode;
+      lNode := Tree.GetNext(lNode);
     end;
   Result := rNode;
 end;
@@ -1205,8 +988,6 @@ var
             Tree.Expanded[tNode2] := False
           else
             Tree.Expanded[tNode2] := True;
-//            TreeNode.Collapse(False)
-//          else TreeNode.Expand(False);
         end
       else if UseGames then
         begin
@@ -1240,7 +1021,6 @@ var
                   GDataU := Tree.GetNodeData(GData^.TopParent);
                   d := d+' TopParent: '+GDataU^.Name;
                 end;
-//              ShowMessage(d);
             end;
 
           Tree.IsVisible[tNode2] := True;
@@ -1326,27 +1106,20 @@ begin
     TmRect := NodeRect;
     TmRect.Left:=0;
     TmRect.Right:=TVirtualStringTree(Sender).Width-ww-5;
-    TmRect.Top:=TmRect.Top; // -2
-    TmRect.Bottom:=TmRect.Bottom; // +2
     Pen.Style := psClear;
     Brush.Style := bsClear;
     Pen.Color := clWhite;
-//    if (c) then DrawFocusRect(NodeRect);
     Brush.Color := Brush.Color;
     Brush.Style := bsClear;
-//    If b then Font.Style := [fsBold];
 
     if (s <> '') and (GData^.FType = 'Folder') and (TVirtualStringTree(Sender).GetNodeLevel(Node) = 0) then
       begin
         Brush.Style := bsSolid;
-        Brush.Color := clWhite;
+        if (c) then Brush.Color := cl3Dlight
+        else Brush.Color := clWhite;
+
         FillRect(NodeRect);
         FillRect(Rect(TmRect.Left,(NodeRect.Top+NodeRect.Bottom-TextHeight('Tg')) div 2,NodeRect.Right,NodeRect.Bottom)); // ?
-        Brush.Color := Brush.Color;
-        Brush.Style := bsClear;
-
-        Brush.Style := bsSolid;
-        Brush.Color := clWhite;
 
         Font.Style := [fsBold];
         Pen.Style := psSolid;
@@ -1368,7 +1141,6 @@ begin
         Pen.Style := psClear;
         Brush.Style := bsClear;
         Pen.Color := clWhite;
-        if (c) then DrawFocusRect(TmRect);
         Font.Style:=[];
         Font.Color := clOld;
         Brush.Style := OldBrushStyle;
@@ -1379,7 +1151,8 @@ begin
     else if (s <> '') and (GData^.FType = 'Folder') and (TVirtualStringTree(Sender).GetNodeLevel(Node) > 0) then
      begin
        Brush.Style := bsSolid;
-       Brush.Color := clWhite;
+       if (c) then Brush.Color := cl3Dlight
+       else Brush.Color := clWhite;
        Font.Style := Font.Style - [fsBold];
        Font.Style := [];
        FillRect(NodeRect);
@@ -1393,13 +1166,6 @@ begin
            if (i > High(ColorSet)) then
              i := High(ColorSet);
          end;
-
-       Brush.Style := bsSolid;
-       Brush.Color := clWhite;
-//////       FillRect(Rect(TmRect.Left,(NodeRect.Top+NodeRect.Bottom-TextHeight('Tg')) div 2,NodeRect.Right,NodeRect.Bottom)); // ?
-//       Brush.Color := Brush.Color;
-//       Brush.Style := bsClear;
-//////       FillRect(TmRect.Left,TmRect.Top,TmRect.Right,TmRect.Bottom);
        Pen.Color := ColorSet[i];
        Font.Color := ColorSet[i];
        Pen.Width := 1;
@@ -1419,7 +1185,6 @@ begin
        Pen.Style := psClear;
        Brush.Style := bsClear;
        Pen.Color := clWhite;
-       if (c) then DrawFocusRect(TmRect);
        Font.Color := clOld;
        Brush.Style := OldBrushStyle;
        TextStyle := OldTextStyle;
@@ -1427,15 +1192,9 @@ begin
        exit;
      end;
 
-    BRect.Left := TmRect.Left + 1;
-    BRect.Top := TmRect.Top;
-    BRect.Bottom := TmRect.Bottom - 0;
-    BRect.Right := BRect.Left + (BRect.Bottom - BRect.Top) - 8;
-
     BRect.Left := NodeRect.Left;
     BRect.Top := NodeRect.Top+2;
     BRect.Bottom := NodeRect.Bottom-1;
-    BRect.Right := NodeRect.Left + (NodeRect.Bottom - NodeRect.Top);
     BRect.Right := NodeRect.Left+(NodeRect.Bottom - NodeRect.Top);
 
     Brush.Style := bsSolid;
@@ -1490,47 +1249,26 @@ end;
 function VGetCheckCount(Tree: TVirtualStringTree; StatusPanel: TStatusPanel; Update:Boolean):Integer;
 var
   j,k,totalg,totalsh: Integer;
-  lNode,lNode2: PVirtualNode;
-
-  procedure nProcessNode(Node: PVirtualNode);
-  var
-    GData: PTreeData;
-    cNode,cNode2: PVirtualNode;
-  begin
-    if (Node = nil) then exit;
-
-    GData := Tree.GetNodeData(Node);
-    if (GData^.FType = 'Game') then inc(totalg);
-    if (GData^.FType = 'Shortcut') then inc(totalsh);
-
-    if (GData^.FType = 'Game') and VNodeChecked(Tree,Node) then inc(j);
-    if (GData^.FType = 'Shortcut') and VNodeChecked(Tree,Node) then inc(k);
-
-    // Goes to the child node
-    cNode := Tree.GetFirstChild(Node);
-
-    // Processes all child nodes
-    while cNode <> nil do
-      begin
-        cNode2 := Tree.GetNextSibling(cNode);
-        nProcessNode(cNode);
-        cNode := cNode2;
-      end;
-  end;
-
+  lNode: PVirtualNode;
+  GData: PTreeData;
 begin
   j := 0;
   k := 0;
   totalg := 0;
   totalsh := 0;
-  if (Tree.GetFirst() <> nil) then
+  lNode := Tree.GetFirst();
+  if (lNode <> nil) then
     begin
-      lNode := Tree.GetFirst();
       while (lNode <> nil) do
         begin
-          lNode2 := Tree.GetNextSibling(lNode);
-          nProcessNode(lNode);
-          lNode := lNode2;
+          GData := Tree.GetNodeData(lNode);
+          if (GData^.FType = 'Game') then inc(totalg);
+          if (GData^.FType = 'Shortcut') then inc(totalsh);
+
+          if (GData^.FType = 'Game') and VNodeChecked(Tree,lNode) then inc(j);
+          if (GData^.FType = 'Shortcut') and VNodeChecked(Tree,lNode) then inc(k);
+
+          lNode := Tree.GetNext(lNode);
         end;
     end;
   if Update then
