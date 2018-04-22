@@ -805,12 +805,13 @@ begin
   while (lNode <> nil) do
     begin
       GData := Tree.GetNodeData(lNode);
+      GData2 := nil;
       if (GData^.BelongsTo <> nil) then
         GData2 := Tree.GetNodeData(GData^.BelongsTo);
       if (GData^.FType = 'Folder') and (GData^.Name = ChildFolder) then
         begin
         if ((GData^.BelongsTo = nil) and (ParentFolder = '')) or
-           ((GData2^.Name = GData^.Name) and (ParentFolder = '')) then
+           (Assigned(GData2) and (GData2^.Name = GData^.Name) and (ParentFolder = '')) then
           begin
             GData^.FilePath := Path;
             GData^.Hash := VGetHash(Tree,GData);
@@ -833,6 +834,7 @@ var
   GData: PTreeData;
 begin
   lNode := Tree.GetFirst();
+  HashToVNode := nil;
   if (lNode = nil) then exit;
   rNode := nil;
   while (lNode <> nil) and (rNode = nil) do
@@ -948,6 +950,7 @@ var
     begin
       if Node = nil then Exit; // Stops if reached a leaf
 
+      tNode2 := nil;
       // Adds a node to the tree
       if (Node.NodeName = 'Folder') then
         begin

@@ -3,7 +3,7 @@
   <ProjectSession>
     <PathDelim Value="\"/>
     <Version Value="10"/>
-    <BuildModes Active="Debug"/>
+    <BuildModes Active="Release"/>
     <Units Count="20">
       <Unit0>
         <Filename Value="snescfav.lpr"/>
@@ -20,9 +20,8 @@
         <ComponentName Value="Form1"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="1140"/>
-        <CursorPos X="3" Y="1142"/>
+        <TopLine Value="145"/>
+        <CursorPos X="2" Y="149"/>
         <UsageCount Value="217"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -39,9 +38,10 @@
       <Unit3>
         <Filename Value="ui_utils.pas"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="10"/>
-        <TopLine Value="54"/>
-        <CursorPos Y="63"/>
+        <TopLine Value="804"/>
+        <CursorPos X="21" Y="808"/>
         <UsageCount Value="217"/>
         <Loaded Value="True"/>
       </Unit3>
@@ -71,8 +71,8 @@
         <Filename Value="tools.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="6"/>
-        <TopLine Value="20"/>
-        <CursorPos X="10" Y="29"/>
+        <TopLine Value="373"/>
+        <CursorPos X="7" Y="382"/>
         <UsageCount Value="210"/>
         <Loaded Value="True"/>
       </Unit6>
@@ -103,8 +103,8 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="PopupEx"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="438"/>
-        <CursorPos X="10" Y="442"/>
+        <TopLine Value="306"/>
+        <CursorPos X="24" Y="315"/>
         <UsageCount Value="209"/>
         <Loaded Value="True"/>
       </Unit9>
@@ -160,7 +160,7 @@
         <EditorIndex Value="3"/>
         <TopLine Value="82"/>
         <CursorPos Y="97"/>
-        <UsageCount Value="83"/>
+        <UsageCount Value="84"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit16>
@@ -169,7 +169,7 @@
         <EditorIndex Value="4"/>
         <TopLine Value="34"/>
         <CursorPos Y="51"/>
-        <UsageCount Value="83"/>
+        <UsageCount Value="84"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit17>
@@ -178,7 +178,7 @@
         <EditorIndex Value="5"/>
         <TopLine Value="206"/>
         <CursorPos Y="224"/>
-        <UsageCount Value="83"/>
+        <UsageCount Value="84"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit18>
@@ -192,123 +192,123 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="main.pas"/>
-        <Caret Line="955" Column="32" TopLine="948"/>
+        <Caret Line="982" TopLine="971"/>
       </Position1>
       <Position2>
-        <Filename Value="main.pas"/>
-        <Caret Line="295" Column="23" TopLine="287"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="819" Column="7" TopLine="805"/>
       </Position2>
       <Position3>
-        <Filename Value="main.pas"/>
-        <Caret Line="147" TopLine="139"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="836" Column="22" TopLine="827"/>
       </Position3>
       <Position4>
-        <Filename Value="main.pas"/>
-        <Caret Line="945" Column="66" TopLine="937"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="932" Column="35" TopLine="927"/>
       </Position4>
       <Position5>
-        <Filename Value="main.pas"/>
-        <Caret Line="951" Column="44" TopLine="944"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="948" Column="19" TopLine="932"/>
       </Position5>
       <Position6>
-        <Filename Value="main.pas"/>
-        <Caret Line="293" Column="3" TopLine="290"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="963" Column="13" TopLine="949"/>
       </Position6>
       <Position7>
-        <Filename Value="main.pas"/>
-        <Caret Line="954" TopLine="945"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="964" Column="43" TopLine="950"/>
       </Position7>
       <Position8>
-        <Filename Value="main.pas"/>
-        <Caret Line="296" Column="78" TopLine="287"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="968" Column="33" TopLine="954"/>
       </Position8>
       <Position9>
-        <Filename Value="main.pas"/>
-        <Caret Line="963" Column="3" TopLine="955"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="970" Column="59" TopLine="956"/>
       </Position9>
       <Position10>
-        <Filename Value="main.pas"/>
-        <Caret Line="188" Column="3" TopLine="176"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="971" Column="33" TopLine="957"/>
       </Position10>
       <Position11>
-        <Filename Value="main.pas"/>
-        <Caret Line="203" Column="23" TopLine="197"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="973" Column="33" TopLine="959"/>
       </Position11>
       <Position12>
-        <Filename Value="main.pas"/>
-        <Caret Line="959" Column="46" TopLine="950"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="988" Column="17" TopLine="974"/>
       </Position12>
       <Position13>
-        <Filename Value="main.pas"/>
-        <Caret Line="298" Column="3" TopLine="292"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="989" Column="43" TopLine="975"/>
       </Position13>
       <Position14>
-        <Filename Value="main.pas"/>
-        <Caret Line="967" TopLine="957"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="991" Column="32" TopLine="977"/>
       </Position14>
       <Position15>
-        <Filename Value="main.pas"/>
-        <Caret Line="312" Column="3" TopLine="302"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="992" Column="33" TopLine="978"/>
       </Position15>
       <Position16>
-        <Filename Value="main.pas"/>
-        <Caret Line="306" Column="33" TopLine="302"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="1009" Column="32" TopLine="995"/>
       </Position16>
       <Position17>
-        <Filename Value="main.pas"/>
-        <Caret Line="685" Column="50" TopLine="669"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="943" Column="52" TopLine="941"/>
       </Position17>
       <Position18>
-        <Filename Value="main.pas"/>
-        <Caret Line="309" Column="80" TopLine="302"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="963" Column="43" TopLine="949"/>
       </Position18>
       <Position19>
-        <Filename Value="main.pas"/>
-        <Caret Line="316" TopLine="301"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="964" Column="71" TopLine="950"/>
       </Position19>
       <Position20>
-        <Filename Value="main.pas"/>
-        <Caret Line="192" Column="8" TopLine="174"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="966" Column="72" TopLine="952"/>
       </Position20>
       <Position21>
         <Filename Value="ui_utils.pas"/>
-        <Caret Line="83" Column="36" TopLine="69"/>
+        <Caret Line="952" Column="21" TopLine="942"/>
       </Position21>
       <Position22>
-        <Filename Value="main.pas"/>
-        <Caret Line="207" Column="28" TopLine="200"/>
+        <Filename Value="nutils.pas"/>
+        <Caret Line="15" Column="30" TopLine="6"/>
       </Position22>
       <Position23>
-        <Filename Value="ui_utils.pas"/>
-        <Caret Line="1097" Column="56" TopLine="1093"/>
+        <Filename Value="nutils.pas"/>
+        <Caret Line="11" Column="11" TopLine="2"/>
       </Position23>
       <Position24>
-        <Filename Value="ui_utils.pas"/>
-        <Caret Line="63" Column="27" TopLine="54"/>
+        <Filename Value="tools.pas"/>
+        <Caret Line="352" TopLine="335"/>
       </Position24>
       <Position25>
-        <Filename Value="main.pas"/>
-        <Caret Line="1459" Column="21" TopLine="1455"/>
+        <Filename Value="tools.pas"/>
+        <Caret Line="377" Column="3" TopLine="369"/>
       </Position25>
       <Position26>
-        <Filename Value="main.pas"/>
-        <Caret Line="1460" Column="21" TopLine="1455"/>
+        <Filename Value="tools.pas"/>
+        <Caret Line="382" Column="7" TopLine="373"/>
       </Position26>
       <Position27>
-        <Filename Value="main.pas"/>
-        <Caret Line="1459" Column="21" TopLine="1455"/>
+        <Filename Value="popupex.pas"/>
+        <Caret Line="315" Column="24" TopLine="306"/>
       </Position27>
       <Position28>
-        <Filename Value="ui_utils.pas"/>
-        <Caret Line="324" Column="58" TopLine="319"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="152" Column="28" TopLine="144"/>
       </Position28>
       <Position29>
-        <Filename Value="ui_utils.pas"/>
-        <Caret Line="63" Column="29" TopLine="54"/>
+        <Filename Value="main.pas"/>
+        <Caret Line="149" Column="2" TopLine="145"/>
       </Position29>
       <Position30>
-        <Filename Value="main.pas"/>
-        <Caret Line="1459" TopLine="1455"/>
+        <Filename Value="ui_utils.pas"/>
+        <Caret Line="813" Column="28" TopLine="804"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>
