@@ -129,6 +129,7 @@ object Form1: TForm1
     Enabled = False
     OnChange = NANDCheckBoxChange
     TabOrder = 6
+    Visible = False
   end
   object ClearShcBtn: TButton
     Left = 441
@@ -197,6 +198,7 @@ object Form1: TForm1
     OnMouseDown = VSTMouseDown
     OnMouseMove = VSTMouseMove
     OnMouseLeave = VSTMouseLeave
+    OnNodeClick = VSTNodeClick
   end
   object SaveShcBtn: TButton
     Left = 338
@@ -229,7 +231,7 @@ object Form1: TForm1
     SelectionCurveRadius = 10
     TabOrder = 11
     TreeOptions.AnimationOptions = [toAnimatedToggle, toAdvancedAnimatedToggle]
-    TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseBlendedImages]
+    TreeOptions.PaintOptions = [toHideFocusRect, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseBlendedImages]
     TreeOptions.SelectionOptions = [toRestoreSelection]
     OnCompareNodes = SVSTCompareNodes
     OnDrawText = SVSTDrawText
@@ -237,6 +239,7 @@ object Form1: TForm1
     OnGetText = VSTGetText
     OnGetNodeDataSize = VSTGetNodeDataSize
     OnMouseDown = SVSTMouseDown
+    OnNodeClick = SVSTNodeClick
   end
   object MainMenu1: TMainMenu
     left = 24

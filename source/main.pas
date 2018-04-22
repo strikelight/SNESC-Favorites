@@ -144,6 +144,7 @@ type
     procedure DeleteSlotClick(Sender: TObject);
     procedure DataProviderGetImage(Sender: TIpHtmlNode; const URL: string;
           var Picture: TPicture);
+    procedure SVSTNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo);
     procedure VSTAfterItemPaint(Sender: TBaseVirtualTree;
       TargetCanvas: TCanvas; Node: PVirtualNode; const ItemRect: TRect);
     procedure VSTChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -162,6 +163,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure VSTMouseLeave(Sender: TObject);
     procedure VSTMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure VSTNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo);
   private
     { private declarations }
     progressBar: TProgressBar;
@@ -183,6 +185,8 @@ var
   ViewGameInfo: Boolean;
   LastUsedXML: String;
   HomeName: String;
+  LastSVSTNode: PVirtualNode;
+  LastVSTNode: PVirtualNode;
 
 
 implementation
@@ -197,6 +201,8 @@ var
 begin
   Form1.Caption := GetProductName+' - '+GetProductVersion;
   VST.DoubleBuffered:=True;
+  LastSVSTNode := nil;
+  LastVSTNode := nil;
   PopupNotifier1 := TPopupEx.Create(Self);
   PopupNotifier1.Color:=clSkyBlue;
   PopupNotifier1.Title:='Game Information';
@@ -283,6 +289,21 @@ begin
       Picture.Free;
     Picture := nil;
   end;
+end;
+
+procedure TForm1.SVSTNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo
+  );
+var
+  Node: PVirtualNode;
+begin
+  Node := HitInfo.HitNode;
+  if (SVST.Selected[Node] and (LastSVSTNode = Node) and (GetKeyPressed(VK_LCONTROL) or GetKeyPressed(VK_RCONTROL))) then
+    begin
+      SVST.ClearSelection;
+      LastSVSTNode := nil;
+    end
+  else
+    LastSVSTNode := Node;
 end;
 
 procedure TForm1.VSTAfterItemPaint(Sender: TBaseVirtualTree;
@@ -482,6 +503,7 @@ end;
 
 procedure TForm1.VSTMouseLeave(Sender: TObject);
 begin
+  VST.Repaint;
   if PopupNotifier1.Visible then
    begin
      PopupNotifier1.Text:='';
@@ -586,6 +608,21 @@ begin
       PopupNotifier1.Text:=DisplayText;
       OControl.SetFocus;
     end;
+end;
+
+procedure TForm1.VSTNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo
+  );
+var
+  Node: PVirtualNode;
+begin
+  Node := HitInfo.HitNode;
+  if (SVST.Selected[Node] and (LastVSTNode = Node) and (GetKeyPressed(VK_LCONTROL) or GetKeyPressed(VK_RCONTROL))) then
+    begin
+      VST.ClearSelection;
+      LastVSTNode := nil;
+    end
+  else
+    LastVSTNode := Node;
 end;
 
 procedure TForm1.InitSlots;
@@ -935,9 +972,13 @@ end;
 
 procedure TForm1.SVSTMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
+var
+  Node: PVirtualNode;
 begin
   if (Button = mbRight) then
     MouseInput.Click(mbLeft,[]);
+  Node := SVST.GetNodeAt(X,Y);
+  if (Node = nil) then SVST.ClearSelection;
 end;
 
 procedure TForm1.LoadSlotClick(Sender: TObject);
@@ -1327,14 +1368,28 @@ end;
 
 procedure TForm1.MenuItem18Click(Sender: TObject);
 begin
-  DeleteShortcuts(VST);
-  VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
+  if (MessageDlg('Confirm','Do you wish to delete all shortcuts in your list?',
+      mtConfirmation,[mbYes,mbNo],0)=mrYes) then
+    begin
+      DeleteShortcuts(VST);
+      if (MessageDlg('Operation','Completed operation.',mtInformation,[mbOk],0) = mrOk) then
+        begin
+          VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
+        end;
+    end;
 end;
 
 procedure TForm1.MenuItem19Click(Sender: TObject);
 begin
-  DeleteShortcuts(VST, True);
-  VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
+  if (MessageDlg('Confirm','Do you wish to delete the selected shortcuts in your list?',
+      mtConfirmation,[mbYes,mbNo],0)=mrYes) then
+    begin
+      DeleteShortcuts(VST, True);
+      if (MessageDlg('Operation','Completed operation.',mtInformation,[mbOk],0) = mrOk) then
+        begin
+          VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
+        end;
+    end;
 end;
 
 procedure TForm1.PopupMenu1Popup(Sender: TObject);
@@ -1388,7 +1443,7 @@ end;
 procedure TForm1.ClearBtnClick(Sender: TObject);
 begin
   if (not ClearBtn.Focused) and (not GetKeyPressed(VK_MENU)) then exit;
-  VClearSelections(VST);
+  VST.ClearChecked;
   VGetCheckCount(VST, StatusPanel0, True);
 end;
 

@@ -44,7 +44,6 @@ type
     TopParent: PVirtualNode;
   end;
 
-
 procedure VTreeViewDrawItem(Sender: TBaseVirtualTree;
   TargetCanvas: TCanvas; Node: PVirtualNode; const ItemRect: TRect);
 function VGetCheckCount(Tree: TVirtualStringTree; StatusPanel: TStatusPanel; Update:Boolean):Integer;
@@ -61,7 +60,6 @@ procedure VMoveChildrenToParent(TreeView: TVirtualStringTree);
 procedure VMoveChildrenToTop(TreeView: TVirtualStringTree);
 procedure VSelectionView(Tree: TVirtualStringTree; nSelected: Boolean);
 procedure VShortcutsView(Tree: TVirtualStringTree; nSelected: Boolean);
-procedure VClearSelections(Tree: TVirtualStringTree);
 procedure VGetCheckedCodes(Tree: TVirtualStringTree; var List: TStringList);
 procedure VGetCheckedHashes(Tree: TVirtualStringTree; var List: TStringList);
 procedure CheckVNodesList(Tree: TVirtualStringTree; ChkList: TStringList);
@@ -317,22 +315,6 @@ begin
       lNode2 := Tree.GetNextSibling(lNode);
       nProcessNode(lNode);
       lNode := lNode2;
-    end;
-end;
-
-procedure VClearSelections(Tree: TVirtualStringTree);
-var
-  lNode: PVirtualNode;
-  GData: PTreeData;
-begin
-  lNode := Tree.GetFirst();
-  if (lNode = nil) then exit;
-  while (lNode <> nil) do
-    begin
-      GData := Tree.GetNodeData(lNode);
-      if (GData^.FType <> 'Folder') and (VNodeChecked(Tree,lNode)) then
-        ToggleVTreeViewCheckBoxes(Tree,lNode);
-      lNode := Tree.GetNext(lNode);
     end;
 end;
 
@@ -1076,7 +1058,7 @@ var
   OldTextStyle: TTextStyle;
   NewTextStyle: TTextStyle;
   OldStyle: TFontStyles;
-  b,c : Boolean;
+  b,c,h : Boolean;
   clOld: TColor;
   GData: PTreeData;
   w,ww,i,j : Integer;
@@ -1091,6 +1073,7 @@ begin
 //  TVirtualStringTree(Sender).BeginUpdate;  -- causes flickering
   b := TVirtualStringTree(Sender).Selected[Node];
   c := (Node = TVirtualStringTree(Sender).FocusedNode);
+  h := (Node = TVirtualStringTree(Sender).HotNode);
   GData := TVirtualStringTree(Sender).GetNodeData(Node);
 
   s := GData^.Name;
@@ -1116,6 +1099,7 @@ begin
       begin
         Brush.Style := bsSolid;
         if (c) then Brush.Color := cl3Dlight
+        else if (h) then Brush.Color := clGradientActiveCaption
         else Brush.Color := clWhite;
 
         FillRect(NodeRect);
@@ -1152,6 +1136,7 @@ begin
      begin
        Brush.Style := bsSolid;
        if (c) then Brush.Color := cl3Dlight
+       else if (h) then Brush.Color := clGradientActiveCaption
        else Brush.Color := clWhite;
        Font.Style := Font.Style - [fsBold];
        Font.Style := [];
@@ -1220,6 +1205,11 @@ begin
           Font.Color := clBlack;
       end;
     If b Then Font.Style := [fsBold];
+    if (TVirtualStringTree(Sender).HotNode = Node) then
+      begin
+        Font.Color := clHighlight;
+        Font.Style := Font.Style + [fsUnderline];
+      end;
     NewTextStyle := OldTextStyle;
     NewTextStyle.Layout := tlCenter;
     TextStyle := NewTextStyle;
