@@ -1,3 +1,54 @@
+1.1.0 (4/26/2018)
+- Added: Count of selected games to statusbar
+- Added: Save list of checked games for up to 3 folders.xml files
+- Added: Option to only view selected games
+- Added: Right click option on home folder to rename it
+- Added: Tools option to add a Home Icon to nested folders
+- Added: Option to Tools menu to backup or restore a folders_snes.xml file
+- Added: Create/Delete shortcuts other than favorites
+- Added: Create new folders via Right-Click menu on shortcuts box
+- Added: Game/Folder information popup
+- Added: Option to add/remove Console prefixes to Hakchi game titles
+- Added: Right click option to open explorer window to folder
+- Added: View shortcuts only option
+- Added: Default icon for Home folder in game information display
+- Added: Additional support links to about box
+- Change: Added option to save presets of favorites instead of autosaving based on XML file, as the location/filename of the XML will usually be the same.
+- Change: Pixelated default Home folder icon
+- Change: Updated About dialog box
+- Change: Replaced TCheckBoxList with TTreeView for more efficient data association
+- Change: Removed limit on number of selection presets
+- Change: Switched to Virtual TreeView to eliminate text smearing
+- Change: Focus rectangle from shortcut treeview nodes
+- Change: Removed recursion from simple routines that do not alter Tree structure
+- Fix: Check hakchi games folder is not invalid when saving favorites
+- Fix: Do not save checked games for wrong XML filename
+- Fix: Memory leak fixes
+- Fix: Displaying of Selected/Shortcuts only on start up and XML file load
+- Fix: Removed debug output when saving favorites
+- Fix: Game information display for root folders
+- Fix: Folder icons not showing in game information
+- Fix: Bug with creating a sub-folder in a newly created folder
+
+1.0.7 Beta (3/28/2018)
+- Added options to Backup and Restore folders.xml files
+- Change: Pixelated Home folder icon
+
+1.0.6 Beta (3/28/2018)
+- Added "Tools->Add home icon to nested sub-folders" option
+- Fix: Removed debug popups when saving favorites
+
+1.0.5 Beta (3/23/2018)
+- Added option to only view selected games
+- Added right click option on home folder to rename it
+- Change: Added option to save/load presets of favorites instead of autosaving based on XML file
+- Fix: Check hakchi games folder is not invalid when saving favorites
+- Fix: Do not save checked games for wrong XML filename
+
+1.0.2 Beta (3/21/2018)
+- Added counter of selected games to status bar
+- Added automatic saving of checked favorites for up to 3 folders.xml profiles
+
 1.0.0 (3/19/2018)
 - Added different colors to sub-folders depending on their nest level
 
