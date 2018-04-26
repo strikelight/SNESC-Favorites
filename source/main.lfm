@@ -216,8 +216,10 @@ object Form1: TForm1
     Width = 195
     ButtonFillMode = fmShaded
     ButtonStyle = bsTriangle
+    Colors.FocusedSelectionColor = clRed
     Colors.FocusedSelectionBorderColor = clBlack
     Colors.HotColor = clHotLight
+    Colors.SelectionTextColor = clWhite
     Colors.TreeLineColor = clHighlight
     Colors.UnfocusedSelectionColor = clGradientActiveCaption
     DefaultText = 'Node'
@@ -228,10 +230,11 @@ object Form1: TForm1
     Indent = 5
     ParentFont = False
     PopupMenu = PopupMenu1
+    SelectionBlendFactor = 100
     SelectionCurveRadius = 10
     TabOrder = 11
     TreeOptions.AnimationOptions = [toAnimatedToggle, toAdvancedAnimatedToggle]
-    TreeOptions.PaintOptions = [toHideFocusRect, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toThemeAware, toUseBlendedImages]
+    TreeOptions.PaintOptions = [toHideFocusRect, toHotTrack, toShowButtons, toShowDropmark, toShowRoot, toThemeAware]
     TreeOptions.SelectionOptions = [toRestoreSelection]
     OnCompareNodes = SVSTCompareNodes
     OnDrawText = SVSTDrawText
@@ -246,6 +249,13 @@ object Form1: TForm1
     top = 40
     object MenuItem1: TMenuItem
       Caption = '&File'
+      object MkFolderOption: TMenuItem
+        Caption = 'Create shortcut folder'
+        OnClick = MkFolderOptionClick
+      end
+      object MenuItem13: TMenuItem
+        Caption = '-'
+      end
       object MenuItem4: TMenuItem
         Caption = 'Sa&ve Favorites'
         Hint = 'Create entries for favorites'

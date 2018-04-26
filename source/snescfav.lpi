@@ -17,8 +17,7 @@
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="1"/>
       <BuildNr Value="3"/>
-      <Attributes pvaPreRelease="True" pvaPrivateBuild="True"/>
-      <StringTable CompanyName="strikelight" FileDescription="Create a favorites shortcut on SNES mini with selected games." OriginalFilename="snescfav.exe" ProductName="SNESC Favorites" ProductVersion="1.1.0-RC"/>
+      <StringTable CompanyName="strikelight" FileDescription="Create a favorites shortcut on SNES mini with selected games." OriginalFilename="snescfav.exe" ProductName="SNESC Favorites" ProductVersion="1.1.0"/>
     </VersionInfo>
     <BuildModes Count="3">
       <Item1 Name="Default" Default="True"/>

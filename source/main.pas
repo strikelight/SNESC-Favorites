@@ -48,6 +48,8 @@ type
     MenuItem11: TMenuItem;
     DelPrefixesOption: TMenuItem;
     MenuItem12: TMenuItem;
+    MenuItem13: TMenuItem;
+    MkFolderOption: TMenuItem;
     ShortcutsOption: TMenuItem;
     MenuItem18: TMenuItem;
     MenuItem19: TMenuItem;
@@ -107,6 +109,7 @@ type
     procedure ExplorerOpen1Click(Sender: TObject);
     procedure MenuItem18Click(Sender: TObject);
     procedure MenuItem19Click(Sender: TObject);
+    procedure MkFolderOptionClick(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure SaveShcBtnClick(Sender: TObject);
     procedure ClearShcBtnClick(Sender: TObject);
@@ -555,7 +558,7 @@ begin
          PopupNotifier1.vNotifierForm.Repaint;
        end;
       PopupNotifier1.Text:=DisplayText;
-      OControl.SetFocus;
+      if (Screen.ActiveForm = Form1) then OControl.SetFocus;
     end
   else if (ViewGameInfo) and (GData^.FType = 'Shortcut') and (GData^.BelongsTo <> nil) then
     begin
@@ -576,7 +579,7 @@ begin
          PopupNotifier1.vNotifierForm.Repaint;
        end;
       PopupNotifier1.Text:=DisplayText;
-      OControl.SetFocus;
+      if (Screen.ActiveForm = Form1) then OControl.SetFocus;
     end
   else if (ViewGameInfo) and (GData^.FType = 'Folder') then
     begin
@@ -606,8 +609,9 @@ begin
          PopupNotifier1.vNotifierForm.Repaint;
        end;
       PopupNotifier1.Text:=DisplayText;
-      OControl.SetFocus;
+      if (Screen.ActiveForm = Form1) then OControl.SetFocus;
     end;
+  VST.Refresh;
 end;
 
 procedure TForm1.VSTNodeClick(Sender: TBaseVirtualTree; const HitInfo: THitInfo
@@ -1199,7 +1203,7 @@ begin
     begin
       statusPanel0.Text:='';
       AddGamePrefixes(MPath,ProgressBar,StatusBar1);
-      if (MessageDlg('Operation','Completed operation.',mtInformation,[mbOk],0) = mrOk) then
+      if (MessageDlg('Operation','Completed operation.'+#13#10+'Note: You will need to re-export your folder structure from hakchi if you wish to have the prefixes displayed on your console.',mtInformation,[mbOk],0) = mrOk) then
       begin
         ProgressBar.Position:=0;
         ProgressBar.Visible:= False;
@@ -1222,7 +1226,6 @@ begin
   FPath := ExtractFilePath(ParamStr(0));
   GData := SVST.GetNodeData(Node);
   FName := GetLastFolderNumber(GData^.FilePath+'\',True);
-  ShowMessage('FName for '+Gdata^.FilePath+' is '+FName);
   if (FName = '') then exit;
   Fname := GenerateFolderName(FName,True);
   if (ConsolePath[Length(ConsolePath)] <> '\') then
@@ -1345,7 +1348,7 @@ begin
     begin
       statusPanel0.Text:='';
       AddGamePrefixes(MPath,ProgressBar,StatusBar1,True);
-      if (MessageDlg('Operation','Completed operation.',mtInformation,[mbOk],0) = mrOk) then
+      if (MessageDlg('Operation','Completed operation.'+#13#10+'Note: You will need to re-export your games from Hakchi if you saved your folder structure with the prefixes in the titles.',mtInformation,[mbOk],0) = mrOk) then
       begin
         ProgressBar.Position:=0;
         ProgressBar.Visible:= False;
@@ -1390,6 +1393,19 @@ begin
           VGetCheckCount(VST, StatusBar1.Panels.Items[0], True);
         end;
     end;
+end;
+
+procedure TForm1.MkFolderOptionClick(Sender: TObject);
+var
+  Node: PVirtualNode;
+begin
+  Node := SVST.GetFirstSelected();
+  if (Node = nil) then
+    begin
+      MessageDlg('Error','Please select a folder in the shortcut panel first to create a sub-folder in.',mtInformation,[mbOk],0);
+      exit;
+    end;
+  CreateFolderMnu.Click;
 end;
 
 procedure TForm1.PopupMenu1Popup(Sender: TObject);

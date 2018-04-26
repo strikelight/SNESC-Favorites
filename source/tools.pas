@@ -26,7 +26,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, IniFiles, Dialogs, ComCtrls, Controls, Graphics,
   FPImage, FPCanvas, FPImgCanv, FPReadJPEG, FPWriteJPEG, FPReadPNG, FPWritePNG, FPReadBMP,
-  RegExpr;
+  RegExpr, Forms, ui_utils;
 
 function AddHomeIcons(Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
 function BackupXML (Filename: String; Dialog: TSaveDialog):Boolean;
@@ -177,6 +177,7 @@ begin
     finally
       Ini.Free;
     end;
+
     FList := TStringList.Create;
     try
       FindAllFiles(FList,Path+'\','*.desktop',True,faDirectory);
@@ -185,7 +186,6 @@ begin
       ProgressBar.Position:=0;
       StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
       StatusBar.Update;
-
       for k := 0 to FList.Count-1 do
         begin
           FData := TStringList.Create;
@@ -221,6 +221,7 @@ begin
           ProgressBar.Position:=ProgressBar.Position+1;
           StatusPanel.Text := Inttostr(Round(ProgressBar.Position/ProgressBar.Max*100))+'%';
           StatusBar.Update;
+          Application.ProcessMessages;
         end;
     finally
       FList.Free;
