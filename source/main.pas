@@ -692,7 +692,7 @@ begin
   if (not LoadBtn.Focused) and (not GetKeyPressed(VK_MENU)) then exit;
   if (XMLEdit.Caption = '') or (not FileExists(XMLEdit.Caption)) then
     begin
-      ShowMessage('Error: Supplied XML filename invalid.');
+      MessageDlg('Error','Supplied XML filename invalid.',mtError,[mbOk],0);
       exit;
     end;
   LastUsedXML := XMLEdit.Caption;
@@ -795,7 +795,7 @@ begin
   if (not SaveBtn.Focused) and (not GetKeyPressed(VK_MENU)) then exit;
   if (LastUsedXML <> XMLEdit.Caption) then
     begin
-      ShowMessage('Warning: New XML filename entered, please click load button first.');
+      MessageDlg('Warning','New XML filename entered, please click load button first.',mtWarning,[mbOk],0);
       exit;
     end;
   if (NANDCheckBox.Checked) then
@@ -803,7 +803,7 @@ begin
       NandPath := CloverShellPath;
       if (NandPath = '') then
         begin
-          ShowMessage('Error Detecting SNES-Mini.  Please make sure it is plugged in and try again.');
+          MessageDlg('Error','Error Detecting Console.  Please make sure it is plugged in and try again.',mtError,[mbOk],0);
           exit;
         end;
       if (LastFavFolder <> '') then
@@ -827,7 +827,7 @@ begin
       fname := fname + '\';
       if (fname = '') or (not DirectoryExists(fname)) then
         begin
-          ShowMessage('Error: Supplied games folder path does not exist.');
+          MessageDlg('Error','Supplied games folder path does not exist.',mtError,[mbOk],0);
           exit;
         end;
       if (LastFavFolder <> '') then
@@ -842,6 +842,11 @@ begin
             LastFavFolder := LastFolder
           else
             LastFavFolder := GenerateFolderName(GetLastFolderNumber(fname));
+          if (LastFavFolder = '') then
+            begin
+              MessageDlg('Error','Please verify the supplied games folder path.'+#13#10+#13#10+'Eg. G:\hakchi\games\snes-eur\',mtError,[mbOk],0);
+              exit;
+            end;
         end;
       statusPanel0.Text:='';
       CreateFaveLinks(fname,VST,ProgressBar,StatusBar1,LastFavFolder);
@@ -1226,8 +1231,8 @@ begin
   FPath := ExtractFilePath(ParamStr(0));
   GData := SVST.GetNodeData(Node);
   FName := GetLastFolderNumber(GData^.FilePath+'\',True);
+  if (FName <> '') then FName := GenerateFolderName(FName,True);
   if (FName = '') then exit;
-  Fname := GenerateFolderName(FName,True);
   if (ConsolePath[Length(ConsolePath)] <> '\') then
     ConsolePath := ConsolePath+'\';
   NewName := Trim(InputBox('Create Folder','Please enter a name for this folder',''));
@@ -1418,19 +1423,29 @@ end;
 
 procedure TForm1.SaveShcBtnClick(Sender: TObject);
 var
-  fname: String;
+  fname,LFolder,LFFolder: String;
 begin
   if (not SaveShcBtn.Focused) and (not GetKeyPressed(VK_MENU)) then exit;
   if (LastUsedXML <> XMLEdit.Caption) then
     begin
-      ShowMessage('Warning: New XML filename entered, please click load button first.');
+      MessageDlg('Warning','New XML filename entered, please click load button first.',mtWarning,[mbOk],0);
       exit;
     end;
   fname := GamesEdit.Caption;
   fname := fname + '\';
   if (fname = '') or (not DirectoryExists(fname)) then
     begin
-      ShowMessage('Error: Supplied games folder path does not exist.');
+      MessageDlg('Error','Supplied games folder path does not exist.',mtError,[mbOk],0);
+      exit;
+    end;
+  LFolder := GetLastFolderNumber(fname);
+  if (FileExists(fname+LFolder+'\.fav')) then
+    LFFolder := LFolder
+  else
+    LFFolder := GenerateFolderName(GetLastFolderNumber(fname));
+  if (LFFolder = '') then
+    begin
+      MessageDlg('Error','Please verify the supplied games folder path.'+#13#10+#13#10+'Eg. G:\hakchi\games\snes-eur\',mtError,[mbOk],0);
       exit;
     end;
   statusPanel0.Text:='';

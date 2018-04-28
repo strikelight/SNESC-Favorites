@@ -79,12 +79,12 @@ var
   end;
 
 begin
-  if (Tree.GetFirst() = nil) then exit;
+  lNode := Tree.GetFirst();
+  if (lNode = nil) then exit;
   Data := TStringList.Create;
   try
     Data.Add('<?xml version="1.0" encoding="utf-16"?>');
     Data.Add('<Tree>');
-    lNode := Tree.GetFirst();
     while (lNode <> nil) do
       begin
         lNode2 := Tree.GetNextSibling(lNode);
@@ -140,8 +140,8 @@ var
   end;
 
 begin
-  if (Tree.GetFirst() = nil) then exit;
   lNode := Tree.GetFirst();
+  if (lNode = nil) then exit;
   while (lNode <> nil) do
     begin
       lNode2 := Tree.GetNextSibling(lNode);
@@ -291,14 +291,14 @@ var
 
 begin
   SaveShortcuts := False;
-  if (Tree.GetFirst() = nil) then exit;
+  lNode := Tree.GetFirst();
+  if (lNode = nil) then exit;
 
   ProgressBar.Visible := True;
   StatusPanel := StatusBar.Panels.Items[1];
   ProgressBar.Max := VGameCount(Tree);
   ProgressBar.Position:=0;
 
-  lNode := Tree.GetFirst();
   while (lNode <> nil) do
     begin
       lNode2 := Tree.GetNextSibling(lNode);
@@ -372,8 +372,9 @@ var
 begin
   if not TryStrToInt(Number,num) then
     begin
-      ShowMessage('Error: String ('+Number+') is not a valid number.');
+      GenerateFolderName := '';
       exit;
+//      ShowMessage('Error: String ('+Number+') is not a valid number.');
     end;
   num := num+1;
   if (not SubFolder) then
@@ -390,6 +391,9 @@ var
   j: Integer;
   Res: Boolean;
 begin
+
+  t := GenerateFolderName(FolderSuff);
+  if (t = '') then exit;
 
   FPath := ExtractFilePath(ParamStr(0));
   DeskFile := TStringList.Create;

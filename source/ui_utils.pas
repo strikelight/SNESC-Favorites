@@ -676,8 +676,8 @@ var
   end;
 
 begin
-  if (TreeView.GetFirst() = nil) then exit;
   lNode := TreeView.GetFirst();
+  if (lNode = nil) then exit;
   while (lNode <> nil) do
     begin
       lNode2 := TreeView.GetNextSibling(lNode);
@@ -729,8 +729,8 @@ var
   end;
 
 begin
-  if (TreeView.GetFirst() = nil) then exit;
   lNode := TreeView.GetFirst();
+  if (lNode = nil) then exit;
   while (lNode <> nil) do
     begin
       lNode2 := TreeView.GetNextSibling(lNode);
@@ -783,8 +783,8 @@ var
   end;
 
 begin
-  if (TreeView.GetFirst() = nil) then exit;
   lNode := TreeView.GetFirst();
+  if (lNode = nil) then exit;
   while (lNode <> nil) do
     begin
       lNode2 := TreeView.GetNextSibling(lNode);
@@ -798,8 +798,8 @@ var
   lNode: PVirtualNode;
   GData,GData2: PTreeData;
 begin
-  if (Tree.GetFirst() = nil) then exit;
   lNode := Tree.GetFirst();
+  if (lNode = nil) then exit;
   ChildFolder := Trim(ChildFolder);
   ParentFolder := Trim(ParentFolder);
   while (lNode <> nil) do

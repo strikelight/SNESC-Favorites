@@ -26,7 +26,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, IniFiles, Dialogs, ComCtrls, Controls, Graphics,
   FPImage, FPCanvas, FPImgCanv, FPReadJPEG, FPWriteJPEG, FPReadPNG, FPWritePNG, FPReadBMP,
-  RegExpr, Forms, ui_utils;
+  RegExpr, Forms;
 
 function AddHomeIcons(Path: String; ProgressBar: TProgressBar; StatusBar: TStatusBar):Boolean;
 function BackupXML (Filename: String; Dialog: TSaveDialog):Boolean;
@@ -340,14 +340,14 @@ begin
   BackupXML := False;
   if (not FileExists(Filename)) then
     begin
-      ShowMessage('Error: File '+Filename+' does not exist.');
+      MessageDlg('Error','File '+Filename+' does not exist.',mtError,[mbOk],0);
       exit;
     end;
   Path := ExtractFilePath(ParamStr(0))+'Backups';
   if (not DirectoryExists(Path)) then
     if (not CreateDir(Path)) then
       begin
-        ShowMessage('Error creating backup directory');
+        MessageDlg('Error','Error creating backup directory.',mtError,[mbOk],0);
         exit;
       end;
   Dialog.InitialDir := Path;
@@ -357,10 +357,10 @@ begin
     begin
       CopyFile(Filename,Dialog.FileName);
       BackupXML := True;
-      ShowMessage('Successfully saved backup.');
+      MessageDlg('Information','Successfully saved backup.',mtInformation,[mbOk],0);
     end
   else
-    ShowMessage('Backup cancelled.');
+    MessageDlg('Information','Backup cancelled.',mtInformation,[mbOk],0);
 end;
 
 function RestoreXML (Filename: String; rDialog: TOpenDialog; hDialog: TSelectDirectoryDialog):Boolean;
@@ -372,7 +372,7 @@ begin
   if (not DirectoryExists(Path)) then
     if (not CreateDir(Path)) then
       begin
-        ShowMessage('Error creating backup directory');
+        MessageDlg('Error','Error creating backup directory.',mtError,[mbOk],0);
         exit;
       end;
   rDialog.InitialDir := Path;
@@ -387,11 +387,11 @@ begin
           begin
             CopyFile(rDialog.FileName,Filename);
             RestoreXML := True;
-            ShowMessage('Successfully restored backup.');
+            MessageDlg('Information','Successfully restored backup.',mtInformation,[mbOk],0);
           end;
     end;
   if (not RestoreXML) then
-    ShowMessage('Restore cancelled.');
+    MessageDlg('Information','Restore cancelled.',mtInformation,[mbOk],0);
 end;
 
 
