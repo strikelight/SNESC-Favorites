@@ -1,8 +1,6 @@
-# SNESC-Favorites
-
 SNESC Favorites is released under the GNU Public License.
 
-SNESC Favorites v1.0.0 by StrikeLight
+SNESC Favorites v1.1.0 by StrikeLight
 
 Description:
 ============
@@ -11,7 +9,7 @@ with your selected games to your mini's GUI home menu.
 
 Pre-requisites:
 ===============
-Note: This has only been tested with SNESC Mini and Hakchi 1.1.0 CE.
+Note: This has only been tested with SNESC Mini and Hakchi CE.
 You must be using USB Host mode, and using Linked Export mode.
 
 Usage:
@@ -24,13 +22,23 @@ Usage:
    on your USB device. (eg. hakchi\games\snes-eur)
 5. Click on the "Load" Button
 6. Your games will populate in the display.  Select up to 30 games to add to favorites.
-7. Click the "Save" Button to complete the process
+7. Click the "Save Favorites" Button to complete the process
+
+To Create shortcuts:
+1. (Optional) Right click in the right pane on an existing folder to create a new one
+2. Check the games you want to create shortcuts for in the left pane
+3. Click on the folder you want the shortcuts added to in the right pane
+4. Click on the '>>' button
+5. Click the "Save Shorcuts" to complete the process
+
+Additional features are available through the menu system.
+
 
 Tips:
 =====
-- If you would like a different favorites icon, replace the files favorites.png and favorites_small.png with your choosing.
+- If you would like a different favorites/home/default folder icon, replace the respective png files in the SNESC directory.
 
 
 Thanks:
 =======
-madmonkey,Cluster,KMFDManic,Team Shinkansen,/r/miniSNESmods,the Hakchi community
+madmonkey,Cluster,Team Shinkansen,Team Hakchi Resources,KMFDManic,/r/miniSNESmods,the Hakchi community
