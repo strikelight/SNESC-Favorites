@@ -1,3 +1,6 @@
+1.1.1 (9/16/2018)
+- Fixed: Escaping of game titles and icon names when saving to xml (Reported by DanTheMan827 and Beylie)
+
 1.1.0 (4/26/2018)
 - Added: Count of selected games to statusbar
 - Added: Save list of checked games for up to 3 folders.xml files

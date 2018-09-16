@@ -48,7 +48,7 @@ var
   var
     GData: PTreeData;
     cNode,cNode2: PVirtualNode;
-    FName,indent: String;
+    FName,FIcon,indent: String;
     i: integer;
   begin
     if (Node = nil) then exit;
@@ -56,9 +56,21 @@ var
     for i := 0 to Tree.GetNodeLevel(Node) do
       indent := indent + '  ';
     GData := Tree.GetNodeData(Node);
+
     FName := StringReplace(GData^.Name,'&','&amp;',[rfReplaceAll]);
+    FName := StringReplace(FName,'<','&lt;',[rfReplaceAll]);
+    FName := StringReplace(FName,'>','&gt;',[rfReplaceAll]);
+    FName := StringReplace(FName,'"','&quot;',[rfReplaceAll]);
+    FName := StringReplace(FName,'''','&apos;',[rfReplaceAll]);
+
+    FIcon := StringReplace(GData^.Icon,'&','&amp;',[rfReplaceAll]);
+    FIcon := StringReplace(FIcon,'<','&lt;',[rfReplaceAll]);
+    FIcon := StringReplace(FIcon,'>','&gt;',[rfReplaceAll]);
+    FIcon := StringReplace(FIcon,'"','&quot;',[rfReplaceAll]);
+    FIcon := StringReplace(FIcon,'''','&apos;',[rfReplaceAll]);
+
     if (GData^.FType = 'Folder') and (Node <> Tree.GetFirst()) then
-      Data.Add(indent+'<Folder name="'+FName+'" icon="'+GData^.Icon+'" position="3">');
+      Data.Add(indent+'<Folder name="'+FName+'" icon="'+FIcon+'" position="3">');
 
     if (GData^.FType = 'Game') then
       Data.Add(indent+'<Game code="'+GData^.Code+'" name="'+FName+'" />');
